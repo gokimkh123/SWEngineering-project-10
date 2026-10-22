@@ -11,6 +11,6 @@
 - [x] 전체 구조도 (초안 2.4, Mermaid)
 - [x] 품질 속성 (초안 2.2)
 - [x] 컴포넌트 식별, 책임, 제공/요구 인터페이스, 의존관계 (초안 3장)
-- [ ] 컴포넌트 다이어그램 → PNG (Visual Paradigm으로 다시 그리기, `.vpp` 원본 함께)
+- [x] 컴포넌트 다이어그램 → [component-diagram.png](component-diagram.png) (Visual Paradigm VPasCode 렌더링, 원본은 [component-diagram.puml](component-diagram.puml) — VPasCode에 붙여 넣으면 다시 그려짐)
 - [ ] 정합성 검토 결과(초안 부록 B) 요구사항·유스케이스 담당과 정리
 - [ ] 팀 검토 반영 후 v1.0
