@@ -11,6 +11,6 @@
 - [x] 전체 구조도 (초안 2.4, Mermaid)
 - [x] 품질 속성 (초안 2.2)
 - [x] 컴포넌트 식별, 책임, 제공/요구 인터페이스, 의존관계 (초안 3장)
-- [x] 컴포넌트 다이어그램 → [component-diagram.png](component-diagram.png) (Visual Paradigm VPasCode 렌더링, 원본은 [component-diagram.puml](component-diagram.puml) — VPasCode에 붙여 넣으면 다시 그려짐. puml은 v1.0 AI 구성(VLM 자체 실행·LLM API)으로 갱신했고 PNG는 다시 렌더링 필요)
+- [x] 컴포넌트 다이어그램 → [component-diagram.png](component-diagram.png) (원본 [component-diagram.puml](component-diagram.puml). v0.1은 Visual Paradigm VPasCode로, v1.0은 VLM 추론 서버·LLM API를 반영해 PlantUML로 다시 렌더링)
 - [x] 정합성 검토 결과(v0.2 부록 B) 정리 → 요구사항분석서 v0.2에 반영 (이슈 #5)
 - [x] 팀 검토 반영 후 v1.0: 3장 컴포넌트 설계까지 9쪽으로 정리 (부록은 제출본에서 뺌, 이력은 git) → 제출본 [../submission](../submission/)

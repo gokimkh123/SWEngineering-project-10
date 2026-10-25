@@ -1,6 +1,6 @@
 @startuml
 ' 찰칵부산 컴포넌트 다이어그램 — 설계서 v1.0 3.3절
-' Visual Paradigm VPasCode로 렌더링 → component-diagram.png
+' PlantUML로 렌더링 → component-diagram.png (Visual Paradigm VPasCode에서도 같은 코드로 열림)
 title 찰칵부산 컴포넌트 다이어그램 (설계서 v1.0)
 
 skinparam componentStyle uml2
@@ -171,7 +171,7 @@ CP19 ..> LLM
 CP19 ..> VLMS
 
 legend right
-  ○ 제공 인터페이스   ⇢ 사용(의존)
+  ○ 제공 인터페이스, 점선 화살표: 사용(의존)
   패키지에서 나가는 점선: 패키지 안 여러 컴포넌트가 사용
   CP-08·09·14는 의존 없는 순수 로직
   외부 서비스는 CP-18·CP-19로만 호출
