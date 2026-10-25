@@ -1,0 +1,174 @@
+@startuml
+' 찰칵부산 컴포넌트 다이어그램 — 설계서 v0.1 3.4절
+' Visual Paradigm VPasCode로 렌더링 → component-diagram.png
+title 찰칵부산 컴포넌트 다이어그램 (설계서 v0.1)
+
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam nodesep 40
+skinparam ranksep 60
+skinparam ArrowColor #555555
+skinparam linetype polyline
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #333333
+}
+skinparam interface {
+  BackgroundColor #FFFFFF
+  BorderColor #333333
+}
+
+package "Presentation · React 모바일 웹" #FFF4EC {
+  [CP-01\nWeb Client] as CP01
+}
+
+[카카오맵 JS SDK] <<library>> as KMAP
+
+package "Application · FastAPI" as PKG_APP #EEF5FB {
+  [CP-02\nTrip API] as CP02
+  [CP-03\nVisit API] as CP03
+  [CP-04\nStory API] as CP04
+  [CP-06\nShare Card Renderer] as CP06
+  () " " as IF02
+  () " " as IF03
+  () " " as IF04
+  () " " as IF06
+}
+
+queue "작업 큐\n(Redis + RQ)" as Q
+
+package "Analysis · Domain (Python)" as PKG_ANA #F3F7EE {
+  package "분석 파이프라인 (워커)" {
+    [CP-07\nAnalysis Orchestrator] as CP07
+    [CP-08\nEXIF Extractor] as CP08
+    [CP-09\nVisit Clusterer] as CP09
+    [CP-11\nPlace Matcher] as CP11
+    [CP-12\nUntagged Photo Resolver] as CP12
+    () " " as IF07
+    () " " as IF08
+    () " " as IF09
+    () " " as IF11
+    () " " as IF12
+  }
+  package "여행기 작업 (워커)" {
+    [CP-13\nStory Generator] as CP13
+    () " " as IF13
+  }
+  package "공용 도메인 모듈 (API·워커 공용)" {
+    [CP-05\nRoute Service] as CP05
+    [CP-10\nCandidate Finder] as CP10
+    [CP-14\nFact Checker] as CP14
+    () " " as IF05
+    () " " as IF10
+    () " " as IF14
+  }
+}
+
+package "Data" #F5F5F5 {
+  [CP-15\nTrip Repository] as CP15
+  [CP-16\nPlace Cache] as CP16
+  [CP-17\nMedia Store] as CP17
+  () " " as IF15
+  () " " as IF16
+  () " " as IF17
+}
+
+package "External Adapter" #FBF1F1 {
+  [CP-18\nPlace Data Adapter] as CP18
+  [CP-19\nAI Gateway] as CP19
+  () " " as IF18
+  () " " as IF19
+}
+
+cloud "외부 서비스" {
+  [TourAPI] <<external>> as TOUR
+  [부산시 API] <<external>> as BUSAN
+  [카카오 로컬] <<external>> as KAKAO
+  [멀티모달 LLM·VLM] <<external>> as LLM
+}
+
+database "PostgreSQL" as PG
+folder "임시 이미지\n(자동 삭제)" as TMP
+
+' ── 제공 인터페이스 (lollipop)
+CP02 -up- IF02 : IF-02 Trip REST
+CP03 -up- IF03 : IF-03 Visit REST
+CP04 -up- IF04 : IF-04 Story REST
+CP06 -up- IF06 : IF-06
+CP05 -up- IF05 : IF-05
+CP07 -up- IF07 : IF-07
+CP08 -up- IF08 : IF-08
+CP09 -up- IF09 : IF-09
+CP10 -up- IF10 : IF-10
+CP11 -up- IF11 : IF-11
+CP12 -up- IF12 : IF-12
+CP13 -up- IF13 : IF-13
+CP14 -up- IF14 : IF-14
+CP15 -up- IF15 : IF-15
+CP16 -up- IF16 : IF-16
+CP17 -up- IF17 : IF-17
+CP18 -up- IF18 : IF-18 PlaceSource
+CP19 -up- IF19 : IF-19 Vision/TextModel
+
+' ── Presentation
+CP01 ..> IF02
+CP01 ..> IF03
+CP01 ..> IF04
+CP01 ..> KMAP
+
+' ── Application
+CP02 ..> Q : 분석 작업 등록
+CP02 ..> IF17
+CP03 ..> IF05
+CP03 ..> IF10
+CP03 ..> IF16
+CP04 ..> Q : 여행기 작업 등록
+CP04 ..> IF14
+CP04 ..> IF06
+CP06 ..> IF17
+
+' ── 작업 큐 → 워커
+Q ..> IF07
+Q ..> IF13
+
+' ── 분석 파이프라인
+CP07 ..> IF08
+CP07 ..> IF09
+CP07 ..> IF10
+CP07 ..> IF11
+CP07 ..> IF12
+CP07 ..> IF17
+CP11 ..> IF19
+CP12 ..> IF19
+
+' ── 여행기 작업
+CP13 ..> IF19
+CP13 ..> IF14
+CP13 ..> IF05
+CP13 ..> IF16
+
+' ── 공용 도메인 모듈
+CP10 ..> IF18
+CP10 ..> IF16
+
+' ── Trip Repository는 거의 모든 컴포넌트가 쓰므로 패키지 단위로 표시
+PKG_APP ..> IF15
+PKG_ANA ..> IF15
+
+' ── Data / External
+CP15 ..> PG
+CP16 ..> PG
+CP17 ..> TMP
+CP18 ..> TOUR
+CP18 ..> BUSAN
+CP18 ..> KAKAO
+CP19 ..> LLM
+
+legend right
+  ○ 제공 인터페이스   ⇢ 사용(의존)
+  패키지에서 나가는 점선: 패키지 안 여러 컴포넌트가 사용
+  CP-08·09·14는 의존 없는 순수 로직
+  외부 서비스는 CP-18·CP-19로만 호출
+endlegend
+@enduml
