@@ -1,0 +1,29 @@
+@startuml
+title 사진 분석 흐름 (UC-01, UC-02)
+actor "여행자" as U
+participant "Web Client" as W
+participant "Trip API" as API
+queue "작업 큐" as Q
+participant "Analysis Orchestrator" as O
+participant "Place Matcher" as M
+participant "AI Gateway" as AI
+
+U -> W : 사진 선택 (최대 30장)
+W -> API : POST /trips/{id}/photos
+W -> API : POST /trips/{id}/analysis
+API -> Q : 분석 작업 등록
+API --> W : job_id
+loop 2초마다
+  W -> API : GET /jobs/{job_id}
+  API --> W : 단계, 진행률, 방문지 미리보기
+end
+Q -> O : 작업 시작
+O -> O : EXIF 추출 → 방문지 군집화 → 후보 조회
+par 방문지별 동시 처리
+  O -> M : 대표 사진 + 후보 목록
+  M -> AI : VLM 판별 요청
+  AI --> M : 장소 ID, 확신도, 근거 (JSON)
+  M -> M : 응답 검증 → 확신도 라우팅
+end
+O -> O : 결과 저장, 원본 사진·좌표 삭제
+@enduml

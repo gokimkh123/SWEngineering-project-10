@@ -1,0 +1,53 @@
+@startuml
+title 배포 구조 (Docker Compose)
+left to right direction
+skinparam linetype ortho
+skinparam nodesep 40
+skinparam ranksep 80
+
+node "모바일 기기" as Mobile {
+  artifact "모바일 브라우저" as Browser
+}
+
+node "Docker 호스트" as Host <<Docker Compose>> {
+  node "웹 서버" as Web {
+    artifact "React 정적 파일" as Static
+    component "API 프록시" as Proxy
+  }
+  node "api 컨테이너" as ApiC {
+    component "FastAPI (uvicorn)" as Api
+  }
+  node "worker 컨테이너" as WorkerC {
+    component "RQ 워커 × 1~2" as Worker
+  }
+  node "redis 컨테이너" as RedisC {
+    database "Redis" as Redis
+  }
+  node "postgres 컨테이너" as PgC {
+    database "PostgreSQL" as Pg
+  }
+  storage "공유 볼륨\n(임시 이미지)" as Vol
+  node "vlm 컨테이너" as VlmC {
+    component "오픈소스 VLM 추론 서버" as Vlm
+  }
+}
+
+node "외부 API" as Ext <<external>> {
+  component "공공데이터" as Gov
+  component "카카오 로컬" as Kakao
+  component "LLM API" as Llm
+}
+
+Browser --> Web : HTTPS
+Web --> ApiC
+Web -[hidden]-> WorkerC
+ApiC --> RedisC
+ApiC --> PgC
+ApiC --> Vol
+ApiC --> Ext
+WorkerC --> RedisC
+WorkerC --> PgC
+WorkerC --> Vol
+WorkerC --> VlmC
+WorkerC --> Ext
+@enduml

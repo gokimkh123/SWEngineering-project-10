@@ -1,0 +1,27 @@
+@startuml
+title 방문지 상태 변화 (DR-02)
+hide empty description
+skinparam linetype ortho
+
+state "분석중" as Analyzing
+state "자동확정" as AutoConfirmed
+state "사용자 확인 대기" as Waiting {
+  state "확인필요" as NeedsCheck
+  state "선택필요" as NeedsSelection
+}
+state "확정" as Confirmed
+state "기타장소" as OtherPlace
+
+[*] --> Analyzing
+Analyzing --> AutoConfirmed : 확신도 0.8 이상
+Analyzing --> NeedsCheck : 확신도 0.5 이상 0.8 미만
+Analyzing --> NeedsSelection : 확신도 0.5 미만 / 응답 오류 2회
+Analyzing --> NeedsSelection : 600m 안에 후보 없음
+AutoConfirmed --> Confirmed : 사용자 수정
+' 확인필요·선택필요 공통 전이 (복합 상태에서 출발)
+Waiting --> Confirmed : 사용자 선택·직접 검색
+Waiting --> OtherPlace : 사용자가 기타 장소 선택
+AutoConfirmed --> [*]
+Confirmed --> [*]
+OtherPlace --> [*]
+@enduml
