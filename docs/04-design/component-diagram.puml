@@ -1,7 +1,7 @@
 @startuml
-' 찰칵부산 컴포넌트 다이어그램 — 설계서 v0.1 3.4절
+' 찰칵부산 컴포넌트 다이어그램 — 설계서 v1.0 3.3절
 ' Visual Paradigm VPasCode로 렌더링 → component-diagram.png
-title 찰칵부산 컴포넌트 다이어그램 (설계서 v0.1)
+title 찰칵부산 컴포넌트 다이어그램 (설계서 v1.0)
 
 skinparam componentStyle uml2
 skinparam shadowing false
@@ -85,7 +85,11 @@ cloud "외부 서비스" {
   [TourAPI] <<external>> as TOUR
   [부산시 API] <<external>> as BUSAN
   [카카오 로컬] <<external>> as KAKAO
-  [멀티모달 LLM·VLM] <<external>> as LLM
+  [LLM API\n(Claude Haiku · Gemini)] <<external>> as LLM
+}
+
+node "VLM 추론 서버\n(자체 실행)" {
+  [오픈소스 VLM] as VLMS
 }
 
 database "PostgreSQL" as PG
@@ -164,6 +168,7 @@ CP18 ..> TOUR
 CP18 ..> BUSAN
 CP18 ..> KAKAO
 CP19 ..> LLM
+CP19 ..> VLMS
 
 legend right
   ○ 제공 인터페이스   ⇢ 사용(의존)
