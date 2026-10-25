@@ -7,7 +7,7 @@
 ## 할 일
 
 - [x] 목표, 개발 범위 (포함/제외, Must/Should/Could)
-- [x] 일정, WBS
+- [x] 일정, WBS (공수 추정 포함)
 - [x] 리스크
 - [x] 역할표
 - [x] 3개 문서 취합 → `SoftwareEngineering_Midterm_Class{반}_Team10.zip` → LMS 제출 (10/26 밤 12시)
