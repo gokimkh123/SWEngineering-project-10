@@ -1,0 +1,84 @@
+@startuml
+' 찰칵부산 유스케이스 다이어그램 — 요구사항분석서 5장 5.4절
+' 원본: usecase-diagram.puml → usecase-diagram.png (PlantUML 1.2026.9)
+' 묶음 A~D는 요구사항분석서 6.1절 화면 단계. 위에서 아래로 사용 순서
+' 흑백(monochrome). 관계 라벨만 흰 배경을 깔아 선이 글자를 지나가지 않게 함
+' 아래 선언 순서와 화살표 길이(. / .. / ---)는 배치를 정한다. 바꾸면 단계 순서·선 교차가 달라질 수 있다
+title 찰칵부산 유스케이스 다이어그램
+
+left to right direction
+skinparam monochrome true
+skinparam dpi 150
+skinparam defaultFontName "Noto Sans CJK KR"
+skinparam defaultFontSize 17
+skinparam shadowing false
+skinparam packageStyle folder
+skinparam nodesep 28
+skinparam ranksep 70
+skinparam ArrowThickness 1.3
+skinparam ArrowFontSize 15
+skinparam TitleFontSize 21
+skinparam actor {
+  BackgroundColor #FFFFFF
+}
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderThickness 1.3
+}
+skinparam package {
+  FontSize 16
+  FontStyle bold
+  BorderThickness 1
+}
+
+actor "여행자" as User
+
+rectangle "찰칵부산 (모바일 웹)" as SYS {
+  package "A. 업로드·분석" {
+    usecase "UC-01\n사진 업로드·방문지 분석" as UC01
+  }
+  package "B. 장소 확인" {
+    usecase "UC-02\n방문지 장소 확정" as UC02
+    usecase "UC-03\n위치 없는 사진 배정" as UC03
+  }
+  package "C. 동선" {
+    usecase "UC-04\n동선 확인" as UC04
+    usecase "UC-05\n장소 상세 보기" as UC05
+  }
+  package "D. 여행기" {
+    usecase "UC-06\n여행기 생성" as UC06
+    usecase "UC-08\n공유 카드 만들기" as UC08
+    usecase "UC-07\n여행기 편집·사실 대조" as UC07
+    usecase "UC-09\n출처 연결·사실 대조" as UC09
+  }
+}
+
+actor "관광 데이터 API" <<외부 시스템>> as DataAPI
+actor "카카오맵" <<외부 시스템>> as Map
+actor "AI 모델\n(VLM·LLM)" <<외부 시스템>> as AI
+
+User --> UC01
+User --> UC02
+User --> UC04
+User --> UC06
+User --> UC08
+User --> UC03
+User --> UC05
+User --> UC07
+
+' 세로 점선의 라벨은 선과 겹치지 않게 오른쪽으로 민다 (앞의 전각 공백 U+2003은 여백용)
+UC01 <. UC03 :         <back:#FFFFFF> «extend» </back>
+UC04 <. UC05 :         <back:#FFFFFF> «extend» </back>
+UC06 <.. UC07 : <back:#FFFFFF> «extend» </back>
+UC06 ..> UC09 : <back:#FFFFFF> «include» </back>
+UC07 .> UC09 :         <back:#FFFFFF> «include» </back>
+
+UC02 --- DataAPI
+UC04 --- DataAPI
+UC05 --- DataAPI
+UC04 --- Map
+UC02 --- AI
+UC03 --- AI
+UC06 --- AI
+UC07 --- AI
+@enduml
