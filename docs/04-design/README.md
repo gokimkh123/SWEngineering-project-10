@@ -15,5 +15,6 @@
 - [x] 사진 분석 시퀀스 다이어그램 (UC-01, UC-02) → [sequence-diagram.png](sequence-diagram.png) (원본 [sequence-diagram.puml](sequence-diagram.puml))
 - [x] 방문지 상태 다이어그램 (DR-02) → [state-diagram.png](state-diagram.png) (원본 [state-diagram.puml](state-diagram.puml))
 - [x] 배포 다이어그램 (Docker Compose) → [deployment-diagram.png](deployment-diagram.png) (원본 [deployment-diagram.puml](deployment-diagram.puml))
+  - 제출본(docx·pdf)에는 위 3개 puml 원본을 PlantUML로 렌더링한 그림 사용 (Visual Paradigm 무료판 워터마크 제외)
 - [x] 정합성 검토 결과(v0.2 부록 B) 정리 → 요구사항분석서 v0.2에 반영 (이슈 #5)
 - [x] 팀 검토 반영 후 v1.0: 3장 컴포넌트 설계까지 9쪽으로 정리 (부록은 제출본에서 뺌, 이력은 git) → 제출본 [../submission](../submission/)
