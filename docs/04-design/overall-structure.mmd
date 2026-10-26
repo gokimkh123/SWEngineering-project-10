@@ -1,0 +1,18 @@
+flowchart TB
+  P["Presentation · React 모바일 웹<br/>Web Client (화면 A1~D4), 카카오맵 JS SDK"]
+  A["Application · FastAPI<br/>Trip · Visit · Story API, 공유 카드 생성"]
+  Q[("작업 큐<br/>Redis + RQ")]
+  W["Analysis · Domain · Python<br/>분석 파이프라인 워커: EXIF → 군집화 → 후보 조회 → VLM 판별<br/>여행기 생성 워커 · 공용 모듈(동선, 후보 검색, 사실 대조)"]
+  D[("Data<br/>PostgreSQL · 임시 이미지")]
+  X["External Adapter<br/>장소 데이터 어댑터 · AI Gateway"]
+  V["VLM 추론 서버<br/>오픈소스 · 자체 실행"]
+  E["외부 서비스<br/>TourAPI · 부산시 API · 카카오 로컬 · LLM API(Haiku · Gemini)"]
+  P -->|REST / JSON| A
+  A -->|작업 등록| Q
+  Q -->|작업 전달| W
+  A -->|공용 모듈 호출| W
+  A --> D
+  W --> D
+  W --> X
+  X --> V
+  X --> E
