@@ -3,7 +3,23 @@
 - **담당:** 황웅재
 - **평가 항목:** 아키텍처 설계 (2점)
 - **필수 범위:** 3. 컴포넌트 설계까지 (설계서 템플릿이 LMS에 있으면 그 목차를 따름)
-- **문서:** [설계서_찰칵부산_v1.0.md](설계서_찰칵부산_v1.0.md)
+- **문서:** [설계서_찰칵부산_v1.0.md](설계서_찰칵부산_v1.0.md) (3장까지), 설계서 v1.1 [docx](설계서_찰칵부산_v1.1.docx) · [PDF](설계서_찰칵부산_v1.1.pdf) (SDD 템플릿 1~12장 전체, 21쪽. 중간발표 제출본은 v1.0 그대로)
+
+## 다이어그램
+
+| 다이어그램 | 그림 | 원본 코드 | 설계서 v1.1 |
+|---|---|---|---|
+| 전체 구조 (계층) | [overall-structure.png](overall-structure.png) | [overall-structure.mmd](overall-structure.mmd) (Mermaid) | 그림 2-1 |
+| 컴포넌트 | [component-diagram.png](component-diagram.png) | [component-diagram.puml](component-diagram.puml) | 그림 3-1 |
+| 클래스 | [class-diagram.png](class-diagram.png) | [class-diagram.dot](class-diagram.dot) (Graphviz) | 그림 4-1 |
+| 시퀀스 SD-01 사진 분석 (UC-01, UC-02) | [sequence-diagram.png](sequence-diagram.png) | [sequence-diagram.puml](sequence-diagram.puml) | 그림 4-2 |
+| 시퀀스 SD-02 여행기 생성 (UC-06, UC-09) | [sequence-diagram-2.png](sequence-diagram-2.png) | [sequence-diagram-2.puml](sequence-diagram-2.puml) | 그림 4-3 |
+| 방문지 상태 (DR-02) | [state-diagram.png](state-diagram.png) | [state-diagram.puml](state-diagram.puml) | 그림 4-4 |
+| 배포 (Docker Compose) | [deployment-diagram.png](deployment-diagram.png) | [deployment-diagram.puml](deployment-diagram.puml) | 그림 10-1 |
+
+- 그림은 설계서에 들어간 것과 같은 파일이다 (Visual Paradigm 무료판 워터마크 없는 버전)
+- 클래스 다이어그램은 Graphviz로 렌더링: `dot -Tpng -Gdpi=200 class-diagram.dot -o class-diagram.png`
+- SD-02 그림은 PlantUML이 없는 환경에서 puml 내용을 그대로 그린 것이다. PlantUML이나 VPasCode로 다시 렌더링하면 다른 시퀀스 그림과 모양이 맞는다
 
 ## 할 일
 
@@ -18,3 +34,4 @@
   - 제출본(docx·pdf)에는 위 3개 puml 원본을 PlantUML로 렌더링한 그림 사용 (Visual Paradigm 무료판 워터마크 제외)
 - [x] 정합성 검토 결과(v0.2 부록 B) 정리 → 요구사항분석서 v0.2에 반영 (이슈 #5)
 - [x] 팀 검토 반영 후 v1.0: 3장 컴포넌트 설계까지 9쪽으로 정리 (부록은 제출본에서 뺌, 이력은 git) → 제출본 [../submission](../submission/)
+- [x] v1.1: SDD 템플릿(02_설계서(SDD)_템플릿.docx) 양식으로 이관, 4~12장(UML, 데이터, API, AI, 예외, 보안, 배포, 패턴, 추적표) 작성, 클래스·SD-02 다이어그램 추가 (이 폴더에만 둠)
