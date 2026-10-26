@@ -1,0 +1,32 @@
+@startuml
+title 여행기 생성 흐름 (UC-06, UC-09)
+actor "여행자" as U
+participant "Web Client" as W
+participant "Story API" as API
+queue "작업 큐" as Q
+participant "Story Generator" as G
+participant "Route Service" as R
+participant "Fact Checker" as F
+participant "AI Gateway" as AI
+
+U -> W : 문체 선택 후 여행기 만들기
+W -> API : POST /trips/{id}/stories
+API -> Q : 여행기 작업 등록
+API --> W : job_id
+loop 2초마다
+  W -> API : GET /jobs/{job_id}
+  API --> W : 단계, 진행률
+end
+Q -> G : 작업 시작
+G -> G : 확정 방문지·공식 정보 조회
+G -> R : 날짜별 동선 요약 요청
+R --> G : 동선 요약
+G -> AI : LLM 요청 ({장소 ID, 필드} + 문체)
+AI --> G : 문장별 근거 장소 ID·필드 (JSON)
+G -> F : 문장별 사실 대조
+F --> G : 각주 대상, 경고 목록
+G -> G : 각주·AI 작성 표시 부착, 여행기 저장
+W -> API : GET /stories/{id}
+API --> W : 제목, 본문, 각주 목록
+W --> U : 여행기 표시
+@enduml

@@ -1,0 +1,143 @@
+// 찰칵부산 클래스 다이어그램 (설계서 4.1)
+// 렌더링: dot -Tpng -Gdpi=200 class-diagram.dot -o class-diagram.png
+digraph ClassDiagram {
+  graph [rankdir=TB, splines=spline, nodesep=0.3, ranksep=0.45, fontname="Arial", fontsize=11, newrank=true];
+  node  [shape=plain, fontname="Arial", fontsize=9];
+  edge  [fontname="Arial", fontsize=8, arrowsize=0.7];
+
+  subgraph cluster_domain {
+    label="domain (DR-01~06, DR-09)"; labeljust=l; style=rounded; color="#888888";
+
+    Trip [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee"><b>Trip</b></td></tr>
+      <tr><td align="left" balign="left">- id: UUID<br/>- deviceTokenHash: str<br/>- title: str<br/>- startDate, endDate: date<br/>- consentAt: datetime</td></tr>
+      <tr><td align="left" balign="left">+ giveConsent()<br/>+ delete()</td></tr></table>>];
+
+    Visit [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee"><b>Visit</b></td></tr>
+      <tr><td align="left" balign="left">- id: UUID<br/>- seq, day: int<br/>- center: LatLng (4 decimals)<br/>- status: VisitStatus<br/>- confidence: float<br/>- aiReason: str</td></tr>
+      <tr><td align="left" balign="left">+ confirm(place: Place)<br/>+ markOther()</td></tr></table>>];
+
+    Photo [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee"><b>Photo</b></td></tr>
+      <tr><td align="left" balign="left">- id: UUID<br/>- takenAt: datetime<br/>- hasLocation: bool<br/>- thumbnailPath: str<br/>- isRepresentative: bool</td></tr>
+      <tr><td align="left" balign="left">+ assignTo(visit: Visit)</td></tr></table>>];
+
+    Place [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee"><b>Place</b></td></tr>
+      <tr><td align="left" balign="left">- id: UUID<br/>- source: str<br/>- sourceId: str<br/>- name, type: str<br/>- overview: str<br/>- placeUrl: str<br/>- sourceUpdatedOn: date</td></tr></table>>];
+
+    VisitStatus [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee">«enumeration»<br/><b>VisitStatus</b></td></tr>
+      <tr><td align="left" balign="left">ANALYZING<br/>AUTO_CONFIRMED<br/>NEEDS_CHECK<br/>NEEDS_SELECTION<br/>CONFIRMED<br/>OTHER_PLACE</td></tr></table>>];
+
+    Story [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee"><b>Story</b></td></tr>
+      <tr><td align="left" balign="left">- id: UUID<br/>- style: str<br/>- title: str<br/>- body: list[Paragraph]</td></tr>
+      <tr><td align="left" balign="left">+ edit(pid, text)</td></tr></table>>];
+
+    Footnote [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee"><b>Footnote</b></td></tr>
+      <tr><td align="left" balign="left">- sentenceId: str<br/>- field: str<br/>- sourceName: str<br/>- sourceUpdatedOn: date</td></tr></table>>];
+
+    MatchLog [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee"><b>MatchLog</b></td></tr>
+      <tr><td align="left" balign="left">- aiPlaceId: UUID<br/>- confidence: float<br/>- userPlaceId: UUID<br/>- promptVersion: str</td></tr></table>>];
+  }
+
+  subgraph cluster_service {
+    label="analysis · domain service (CP-05, CP-07~14)"; labeljust=l; style=rounded; color="#888888";
+
+    AnalysisOrchestrator [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee"><b>AnalysisOrchestrator</b></td></tr>
+      <tr><td align="left" balign="left">+ run(tripId)</td></tr></table>>];
+    ExifExtractor [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee"><b>ExifExtractor</b></td></tr>
+      <tr><td align="left" balign="left">+ extract(file): ExifInfo<br/>+ thumbnail(file): bytes</td></tr></table>>];
+    VisitClusterer [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee"><b>VisitClusterer</b></td></tr>
+      <tr><td align="left" balign="left">+ cluster(photos): list[Visit]</td></tr></table>>];
+    CandidateFinder [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee"><b>CandidateFinder</b></td></tr>
+      <tr><td align="left" balign="left">+ find(center, radius): list[Place]<br/>+ search(keyword): list[Place]<br/>+ nearby(visit): list[Place]</td></tr></table>>];
+    PlaceMatcher [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee"><b>PlaceMatcher</b></td></tr>
+      <tr><td align="left" balign="left">+ match(visit, candidates)<br/>- validate(resp): bool<br/>- route(confidence): VisitStatus</td></tr></table>>];
+    UntaggedPhotoResolver [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee"><b>UntaggedPhotoResolver</b></td></tr>
+      <tr><td align="left" balign="left">+ suggest(photo, visits): Visit</td></tr></table>>];
+    StoryGenerator [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee"><b>StoryGenerator</b></td></tr>
+      <tr><td align="left" balign="left">+ generate(trip, style): Story<br/>+ rewrite(story, pid)</td></tr></table>>];
+    FactChecker [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee"><b>FactChecker</b></td></tr>
+      <tr><td align="left" balign="left">+ check(sentences, facts): list[Warning]</td></tr></table>>];
+    RouteService [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee"><b>RouteService</b></td></tr>
+      <tr><td align="left" balign="left">+ route(trip, day): Route</td></tr></table>>];
+  }
+
+  subgraph cluster_adapter {
+    label="external adapter (CP-18, CP-19)"; labeljust=l; style=rounded; color="#888888";
+
+    PlaceSource [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee">«interface»<br/><b>PlaceSource</b></td></tr>
+      <tr><td align="left" balign="left">+ nearby(center, radius)<br/>+ get(sourceId)</td></tr></table>>];
+    VisionModel [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee">«interface»<br/><b>VisionModel</b></td></tr>
+      <tr><td align="left" balign="left">+ choose(image, candidates): JSON</td></tr></table>>];
+    TextModel [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3">
+      <tr><td bgcolor="#eeeeee">«interface»<br/><b>TextModel</b></td></tr>
+      <tr><td align="left" balign="left">+ write(facts, style): JSON</td></tr></table>>];
+
+    TourApiSource   [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#eeeeee"><b>TourApiSource</b></td></tr></table>>];
+    BusanApiSource  [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#eeeeee"><b>BusanApiSource</b></td></tr></table>>];
+    KakaoLocalSource[label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#eeeeee"><b>KakaoLocalSource</b></td></tr></table>>];
+    OpenSourceVlm   [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#eeeeee"><b>OpenSourceVlm</b></td></tr></table>>];
+    HaikuModel      [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#eeeeee"><b>HaikuModel</b></td></tr></table>>];
+    GeminiModel     [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#eeeeee"><b>GeminiModel</b></td></tr></table>>];
+  }
+
+  // 도메인 관계 (composition: 채운 마름모 / association: 열린 화살표)
+  edge [dir=back, arrowtail=diamond];
+  Trip -> Visit    [taillabel="1", headlabel="0..*"];
+  Trip -> Photo    [taillabel="1", headlabel="0..*"];
+  Trip -> Story    [taillabel="1", headlabel="0..*"];
+  Story -> Footnote[taillabel="1", headlabel="0..*"];
+  Visit -> MatchLog[taillabel="1", headlabel="0..*"];
+  edge [dir=forward, arrowhead=vee, arrowtail=none];
+  Visit -> Photo   [taillabel="0..1", headlabel="0..*", label=" groups"];
+  Visit -> Place   [taillabel="0..*", headlabel="0..1"];
+  Footnote -> Place[taillabel="0..*", headlabel="1"];
+  Visit -> VisitStatus;
+
+  // 서비스 의존 (dashed)
+  edge [style=dashed, arrowhead=vee];
+  AnalysisOrchestrator -> ExifExtractor;
+  AnalysisOrchestrator -> VisitClusterer;
+  AnalysisOrchestrator -> CandidateFinder;
+  AnalysisOrchestrator -> PlaceMatcher;
+  AnalysisOrchestrator -> UntaggedPhotoResolver;
+  StoryGenerator -> FactChecker;
+  StoryGenerator -> RouteService;
+  CandidateFinder -> PlaceSource;
+  PlaceMatcher -> VisionModel;
+  UntaggedPhotoResolver -> VisionModel;
+  StoryGenerator -> TextModel;
+
+  // 실체화 (dashed + 빈 삼각형)
+  edge [style=dashed, arrowhead=empty, dir=back, arrowtail=empty];
+  PlaceSource -> TourApiSource;
+  PlaceSource -> BusanApiSource;
+  PlaceSource -> KakaoLocalSource;
+  VisionModel -> OpenSourceVlm;
+  TextModel -> HaikuModel;
+  TextModel -> GeminiModel;
+
+  // 배치: 도메인 위, 서비스 가운데, 어댑터 아래
+  edge [style=invis, dir=none, arrowhead=none, arrowtail=none];
+  Place -> AnalysisOrchestrator;
+  MatchLog -> StoryGenerator;
+  { rank=same; AnalysisOrchestrator; StoryGenerator; }
+  { rank=same; PlaceSource; VisionModel; TextModel; }
+}
