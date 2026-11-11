@@ -1,0 +1,60 @@
+# 찰칵부산 배포 구성 (설계서 2.5 배포 다이어그램: web · api · worker · redis · postgres · vlm + 공유 볼륨)
+# 실행: cp .env.example .env && docker compose up --build   → http://localhost:8080
+# 오픈소스 VLM까지 띄우려면: docker compose --profile vlm up --build  (.env에 VLM_PROVIDER=ollama)
+services:
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_KAKAO_JS_KEY: ${VITE_KAKAO_JS_KEY:-}
+    ports: ["8080:80"]
+    depends_on: [api]
+
+  api:
+    build: ./backend
+    env_file: .env
+    environment: &backend-env
+      DATA_DIR: /data
+      DATABASE_URL: postgresql+psycopg://chalkak:chalkak@postgres:5432/chalkak
+      REDIS_URL: redis://redis:6379/0
+      OLLAMA_URL: http://vlm:11434
+    volumes: [media:/data]  # 임시 이미지·썸네일 공유 볼륨 (CP-17)
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+
+  worker:
+    build: ./backend
+    command: ["python", "-m", "app.worker"]
+    env_file: .env
+    environment: *backend-env
+    volumes: [media:/data]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+
+  redis:
+    image: redis:7-alpine
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: chalkak
+      POSTGRES_PASSWORD: chalkak
+      POSTGRES_DB: chalkak
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chalkak"]
+      interval: 3s
+      retries: 20
+
+  vlm:  # 오픈소스 VLM 추론 서버 (사진은 외부 AI로 보내지 않음, AD-08)
+    image: ollama/ollama:latest
+    profiles: ["vlm"]
+    volumes: [ollama:/root/.ollama]
+    # 처음 한 번: docker compose exec vlm ollama pull qwen2.5vl:7b
+
+volumes:
+  media:
+  pgdata:
+  ollama:

@@ -1,0 +1,11 @@
+# 찰칵부산 백엔드 의존성 (설계서 2.5 기술 표)
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+sqlalchemy>=2.0
+pillow>=10.4
+pillow-heif>=0.18
+scikit-learn>=1.5
+numpy>=1.26
+httpx>=0.27
+pytest>=8.0

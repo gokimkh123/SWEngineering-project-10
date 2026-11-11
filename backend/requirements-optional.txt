@@ -1,0 +1,5 @@
+# 선택 의존성: 실제 운영 구성(설계서 2.5)에서만 필요
+rq>=1.16            # 작업 큐 워커 (REDIS_URL 설정 시)
+redis>=5.0
+psycopg[binary]>=3.2  # PostgreSQL (DATABASE_URL=postgresql+psycopg://...)
+anthropic>=2.0         # LLM_PROVIDER=anthropic (Claude Haiku)

@@ -1,0 +1,14 @@
+# 비밀값 (NFR-07)
+.env
+# Python
+backend/.venv/
+backend/var/
+__pycache__/
+.pytest_cache/
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+# 시연용 실제 사진 원본 (실제 촬영 위치·기기 정보가 EXIF에 있음 → 커밋하지 않음, backend/scripts/import_demo_photos.py 입력)
+/KakaoTalk_*.jpg
