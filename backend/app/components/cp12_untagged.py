@@ -9,7 +9,7 @@ import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from app.adapters.cp19_ai_gateway import AIError, AIGateway
+from app.adapters.cp19_ai_gateway import AIError, AIGateway, josa
 
 WITHIN_MARGIN = timedelta(minutes=20)  # 방문 시간대 앞뒤 20분 안이면 그 방문지
 AMBIGUOUS_RATIO = 1.5  # 앞뒤 방문지까지 시간 차가 1.5배 안쪽이면 애매하다고 본다
@@ -35,6 +35,11 @@ def _fmt(dt: datetime) -> str:
     return dt.strftime("%H:%M")
 
 
+def _and(name: str) -> str:
+    """이름 뒤 접속 조사 '과/와'만 돌려준다 (감천문화마을과, 해동용궁사와)."""
+    return josa(name, "과/와")[len(name):]
+
+
 def suggest_by_time(taken_at: datetime | None, spans: list[VisitSpan]) -> Suggestion:
     """촬영 시각만으로 추천한다. 애매하면 method='vlm'과 비교 대상 두 방문지를 돌려준다 (순수 함수)."""
     if taken_at is None or not spans:
@@ -56,9 +61,9 @@ def suggest_by_time(taken_at: datetime | None, spans: list[VisitSpan]) -> Sugges
     near, far, g_near, g_far = (prev, nxt, gap_prev, gap_next) if gap_prev <= gap_next else (nxt, prev, gap_next, gap_prev)
     if g_far >= g_near * AMBIGUOUS_RATIO:
         return Suggestion(near.visit_id,
-                          f"{_fmt(taken_at)} 촬영 — {prev.name}({_fmt(prev.end_at)})와 {nxt.name}({_fmt(nxt.start_at)}) 사이로, {near.name}에 더 가까운 시각이에요",
+                          f"{_fmt(taken_at)} 촬영 — {prev.name}({_fmt(prev.end_at)}){_and(prev.name)} {nxt.name}({_fmt(nxt.start_at)}) 사이로, {near.name}에 더 가까운 시각이에요",
                           "time")
-    return Suggestion(None, f"{_fmt(taken_at)} 촬영 — {prev.name}와 {nxt.name} 사이 중간 시각이라 사진을 비교해요", "vlm",
+    return Suggestion(None, f"{_fmt(taken_at)} 촬영 — {prev.name}{_and(prev.name)} {nxt.name} 사이 중간 시각이라 사진을 비교해요", "vlm",
                       neighbors=[prev.visit_id, nxt.visit_id])
 
 

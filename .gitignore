@@ -8,7 +8,10 @@ __pycache__/
 # Node
 frontend/node_modules/
 frontend/dist/
-frontend/.env
-frontend/.env.local
 # 시연용 실제 사진 원본 (실제 촬영 위치·기기 정보가 EXIF에 있음 → 커밋하지 않음, backend/scripts/import_demo_photos.py 입력)
+/photos/
 /KakaoTalk_*.jpg
+# 배포 비밀값·설정 (deploy/setup.sh 가 만듦) · 모델 시험용 사진
+deploy/*.env
+!deploy/*.env.example
+deploy/bench/

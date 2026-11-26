@@ -1,9 +1,9 @@
 // D 여행기: D1 문체 선택, D2 여행기, D3 편집·사실 대조, D4 공유 카드 (UC-06~09, FR-09~11, UI-07, NFR-03)
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { api, fmtDate, pollJob } from '../api.js'
+import { api, fmtDate, fmtLongDate, pollJob } from '../api.js'
 import { useApi } from '../hooks.js'
-import { ErrorBox, Icon, Loading, NumBadge, Photo, TopBar, useToast } from '../components/ui.jsx'
+import { ErrorBox, Icon, JHero, Loading, MoreMenu, TopBar, useToast } from '../components/ui.jsx'
 
 const STYLES = [
   { key: 'blog', label: '블로그형', sample: '토요일 아침, 해운대해수욕장에서 여행을 시작했어요.' },
@@ -41,14 +41,14 @@ export function StyleSelect() {
 
   const busy = job && job.status !== 'failed' && !error
   return (
-    <div className="screen no-tabs">
+    <div className="screen no-tabs narrow">
       <TopBar title="여행기 문체" />
       <h2 className="title">어떤 느낌으로 쓸까요?</h2>
-      <p className="muted small" style={{ marginTop: 0 }}>확정한 방문지와 공식 관광 데이터만으로 AI가 써요. 사실 문장에는 출처 각주가 붙어요.</p>
+      <p className="lede small">확정한 방문지와 공식 관광 데이터만으로 AI가 써요. 사실 문장에는 출처 번호가 붙어요.</p>
       {STYLES.map((s) => (
         <button key={s.key} className={`style-card${style === s.key ? ' selected' : ''}`} onClick={() => setStyle(s.key)} disabled={busy}>
           <b>{s.label}</b>
-          <div className="small muted" style={{ marginTop: 4 }}>“{s.sample}”</div>
+          <div className="sample">“{s.sample}”</div>
         </button>
       ))}
       <ErrorBox error={error} onRetry={create} />
@@ -58,6 +58,8 @@ export function StyleSelect() {
     </div>
   )
 }
+
+const openSources = () => { const d = document.getElementById('sources'); if (d) d.open = true }
 
 // 본문 문장 렌더링: 장소 이름 → 장소 상세 링크, 각주 번호 → 하단 출처 (UI-07)
 function Sentence({ s, places, tripId }) {
@@ -80,81 +82,80 @@ function Sentence({ s, places, tripId }) {
   return (
     <span className={s.warnings?.length ? 'warned' : ''} title={s.warnings?.map((w) => w.message).join('\n') || undefined}>
       {parts}
-      {s.footnotes.length > 0 && <sup>{s.footnotes.map((n) => <a key={n} href={`#fn-${n}`} aria-label={`출처 ${n}`}>[{n}]</a>)}</sup>}
+      {s.footnotes.length > 0 && <sup>{s.footnotes.map((n) => <a key={n} href={`#fn-${n}`} aria-label={`출처 ${n}`} onClick={openSources}>[{n}]</a>)}</sup>}
       {' '}
     </span>
   )
 }
 
-function RouteSummary({ days }) {
-  return days.map((d) => (
-    <div key={d.day} className="route-sum" style={{ marginTop: 10 }}>
-      <div className="small" style={{ fontWeight: 700, marginBottom: 6 }}>{d.day}일차 동선 <span className="muted" style={{ fontWeight: 400 }}>· {d.time_range}</span></div>
-      <div className="row">
-        {d.stops.map((st, i) => (
-          <Fragment key={st.order}>
-            <span className="row" style={{ gap: 4 }}><NumBadge n={st.order} color={st.color} size={22} /><span className="small">{st.name}</span></span>
-            {i < d.stops.length - 1 && <span className="muted">›</span>}
-          </Fragment>
-        ))}
-      </div>
-    </div>
-  ))
-}
-
-// ------------------------------------------------------------------ D2 여행기
-export function StoryView() {
-  const { storyId } = useParams()
+// ------------------------------------------------------------------ D2 여행기 (일기장 본문)
+// 큰 사진 + 반투명 날짜 띠, 사진 위 아이콘: 동선 · 편집 · 더보기(공유 카드 · 근처 못 가본 곳 · 여행 삭제)
+export function StoryDetail({ storyId, trip: tripIn, onBack, onDeleted }) {
   const nav = useNavigate()
   const { data: s, error, loading, reload } = useApi(`/stories/${storyId}`)
-  const { data: trip } = useApi(s ? `/trips/${s.trip_id}` : null, [s?.trip_id])
-  if (loading && !s) return <div className="screen"><TopBar title="여행기" /><Loading /></div>
-  if (error) return <div className="screen"><TopBar title="여행기" /><ErrorBox error={error} onRetry={reload} /></div>
+  const { data: tripLoaded } = useApi(!tripIn && s ? `/trips/${s.trip_id}` : null, [s?.trip_id])
+  const trip = tripIn || tripLoaded
+  if (loading && !s) return <div className="j-body"><Loading /></div>
+  if (error) return <div className="j-body"><ErrorBox error={error} onRetry={reload} /></div>
   const places = s.meta?.places || []
-  const dates = Object.fromEntries((s.route_summary || []).map((d) => [d.day, d.date]))
+  const days = s.route_summary || []
+  const dates = Object.fromEntries(days.map((d) => [d.day, d.date]))
+  const first = days[0]
+  const time = first?.time_range?.split(/[–-]/)[0]
+  const date = `${first?.date ? fmtLongDate(first.date) : s.date_range}${time ? ` ${time}` : ''}`
+  const sub = days.flatMap((d) => d.stops.map((x) => x.name)).join(' → ')
   const removed = s.meta?.removed || []
+  const multiDay = days.length > 1
+
+  async function del() {
+    if (!window.confirm('이 여행을 삭제할까요?\n사진 썸네일·방문지·여행기가 모두 지워져요.')) return
+    try {
+      await api(`/trips/${s.trip_id}`, { method: 'DELETE' })
+      onDeleted ? onDeleted() : nav('/', { replace: true })
+    } catch (e) {
+      window.alert(e.message)
+    }
+  }
 
   return (
-    <div className="screen cta-tabs">
-      <TopBar title="여행기" onBack={() => nav('/stories')}
-        right={<Link className="icon-btn" to={`/stories/${s.id}/share`} aria-label="공유 카드"><Icon name="share" /></Link>} />
-      <h2 className="title">{s.title}</h2>
-      <div className="small muted">{s.date_range} · 방문지 {s.visit_count}곳 · {s.style_label}</div>
-      <div className="hero-photo" style={{ margin: '14px 0 0' }}>
-        <Photo id={trip?.cover_photo_id} className="" style={{ borderRadius: 16 }} />
-      </div>
-      <div className="notice info small" style={{ marginTop: 12 }}><Icon name="spark" size={14} /> {s.meta?.ai_label}</div>
-
-      <article className="story" style={{ marginTop: 6 }}>
-        {s.paragraphs.map((p) => (
-          <section key={p.id}>
-            <div className="day-h">{p.day}일차{dates[p.day] ? ` · ${fmtDate(dates[p.day])}` : ''}</div>
-            <p>{p.sentences.map((x) => <Sentence key={x.id} s={x} places={places} tripId={s.trip_id} />)}</p>
-          </section>
-        ))}
-      </article>
-
-      <RouteSummary days={s.route_summary || []} />
-
-      <div className="section-title">출처</div>
-      <ol className="footnotes">
-        {s.footnotes.map((f) => (
-          <li key={f.num} id={`fn-${f.num}`}>[{f.num}] {f.label}{f.updated_at ? ` · 갱신 ${f.updated_at}` : ''}</li>
-        ))}
-      </ol>
-      {removed.length > 0 && (
-        <details className="notice warn small" style={{ marginTop: 12 }}>
-          <summary>근거를 확인하지 못한 문장 {removed.length}개를 뺐어요</summary>
-          <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>{removed.map((r, i) => <li key={i}>“{r.text}” — {r.reasons.join(', ')}</li>)}</ul>
+    <article>
+      <JHero photoId={trip?.cover_photo_id} date={date} sub={sub} onBack={onBack}
+        actions={<>
+          <button className="icon-btn" aria-label="동선 보기" onClick={() => nav(`/trips/${s.trip_id}/route`)}><Icon name="map" /></button>
+          <button className="icon-btn" aria-label="편집" onClick={() => nav(`/stories/${s.id}/edit`)}><Icon name="pen" /></button>
+          <MoreMenu items={[
+            { label: '공유 카드 만들기', icon: 'share', onClick: () => nav(`/stories/${s.id}/share`) },
+            { label: '근처 못 가본 곳', icon: 'search', onClick: () => nav(`/trips/${s.trip_id}/nearby`) },
+            { label: '여행 삭제', icon: 'trash', danger: true, onClick: del },
+          ]} />
+        </>} />
+      <div className="j-body">
+        <h2 className="j-title">{s.title}</h2>
+        <div className="j-text">
+          {s.paragraphs.map((p) => (
+            <section key={p.id}>
+              {multiDay && <div className="day-h">{p.day}일차{dates[p.day] ? `, ${fmtDate(dates[p.day])}` : ''}</div>}
+              <p>{p.sentences.map((x) => <Sentence key={x.id} s={x} places={places} tripId={s.trip_id} />)}</p>
+            </section>
+          ))}
+        </div>
+        <p className="j-ai">{s.meta?.ai_label} {s.style_label}, 모델 {s.model}.</p>
+        <details className="j-sources" id="sources">
+          <summary>출처 {s.footnotes.length}개</summary>
+          <ol className="footnotes">
+            {s.footnotes.map((f) => (
+              <li key={f.num} id={`fn-${f.num}`}>[{f.num}] {f.label}{f.updated_at ? `, 갱신 ${f.updated_at}` : ''}</li>
+            ))}
+          </ol>
         </details>
-      )}
-      <p className="tiny muted">모델: {s.model} · 프롬프트 {s.prompt_version}</p>
-
-      <div className="bottom-cta with-tabs">
-        <button className="btn" onClick={() => nav(`/stories/${s.id}/edit`)}>편집</button>
-        <button className="btn primary" onClick={() => nav(`/stories/${s.id}/share`)}>공유 카드 만들기</button>
+        {removed.length > 0 && (
+          <details className="j-sources">
+            <summary>근거를 확인하지 못해 뺀 문장 {removed.length}개</summary>
+            <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>{removed.map((r, i) => <li key={i}>“{r.text}”: {r.reasons.join(', ')}</li>)}</ul>
+          </details>
+        )}
       </div>
-    </div>
+    </article>
   )
 }
 
@@ -212,9 +213,9 @@ export function StoryEdit() {
   }
 
   return (
-    <div className="screen no-tabs">
+    <div className="screen no-tabs narrow">
       {toast}
-      <TopBar title="편집 · 사실 대조" />
+      <TopBar title="편집과 사실 대조" />
       <label className="small muted" htmlFor="title">제목</label>
       <input id="title" className="input" value={title} onChange={(e) => setTitle(e.target.value)} />
       <p className="tiny muted">고친 문장은 장소명·시간·요금·거리를 공식 데이터와 대조해 다르면 경고해요.</p>
@@ -277,10 +278,10 @@ export function ShareCard() {
 
   const canShare = file && navigator.canShare?.({ files: [file] })
   return (
-    <div className="screen no-tabs">
+    <div className="screen no-tabs narrow">
       <TopBar title="공유 카드" />
       {!url && !error && <div className="skeleton" style={{ aspectRatio: '4 / 5' }} />}
-      {url && <img src={url} alt="공유 카드 미리보기" style={{ borderRadius: 16, boxShadow: 'var(--shadow)' }} />}
+      {url && <img src={url} alt="공유 카드 미리보기" style={{ borderRadius: 'var(--r-lg)', border: '1px solid var(--line)', maxWidth: 480, margin: '0 auto', width: '100%' }} />}
       <ErrorBox error={error} onRetry={make} />
       <div className="notice small" style={{ marginTop: 12 }}>
         좌표·정확한 위치 정보는 넣지 않았어요. 사진은 위치 정보를 지운 썸네일이에요.

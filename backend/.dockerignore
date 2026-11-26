@@ -3,3 +3,4 @@ var
 __pycache__
 .pytest_cache
 tests
+*.pyc

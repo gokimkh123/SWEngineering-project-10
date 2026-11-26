@@ -11,12 +11,16 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 W, H = 1080, 1350
-BG = (255, 248, 242)
-INK = (34, 30, 28)
-SUB = (120, 110, 104)
-ACCENT = (240, 92, 44)
+# 화면과 같은 색(분홍빛 흰 바탕 · 진한 글 · 파란 강조)
+BG = (255, 248, 246)
+INK = (32, 26, 25)
+SUB = (133, 115, 113)
+ACCENT = (33, 150, 243)
 
 FONT_CANDIDATES = {
+    "serif": ["/usr/share/fonts/truetype/nanum/NanumMyeongjoBold.ttf", "/usr/share/fonts/truetype/nanum/NanumSquareB.ttf",
+              "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf", "/System/Library/Fonts/AppleMyungjo.ttf",
+              "C:/Windows/Fonts/batang.ttc", "C:/Windows/Fonts/malgunbd.ttf"],
     "bold": ["/usr/share/fonts/truetype/nanum/NanumSquareB.ttf", "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf",
              "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", "/usr/share/fonts/noto-cjk/NotoSansCJK-Bold.ttc",
              "/System/Library/Fonts/AppleSDGothicNeo.ttc", "C:/Windows/Fonts/malgunbd.ttf"],
@@ -58,7 +62,8 @@ def _wrap(draw: ImageDraw.ImageDraw, text: str, font, width: int, max_lines: int
     return lines
 
 
-def render_share_card(title: str, date_range: str, route_summary: list[dict], thumb_jpeg: bytes | None) -> bytes:
+def render_share_card(title: str, date_range: str, route_summary: list[dict], thumb_jpeg: bytes | None,
+                      by_ai: bool = True) -> bytes:
     img = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(img)
     # 대표 사진 (EXIF 없는 썸네일)
@@ -68,7 +73,7 @@ def render_share_card(title: str, date_range: str, route_summary: list[dict], th
             photo = ImageOps.fit(t.convert("RGB"), (W, photo_h))
         img.paste(photo, (0, 0))
     else:
-        d.rectangle([0, 0, W, photo_h], fill=(250, 214, 190))
+        d.rectangle([0, 0, W, photo_h], fill=(248, 235, 232))
     d.rectangle([0, photo_h - 8, W, photo_h], fill=ACCENT)
 
     y = photo_h + 48
@@ -105,7 +110,8 @@ def render_share_card(title: str, date_range: str, route_summary: list[dict], th
                 d.text((x + 6, y + 1), "›", font=small, fill=SUB)
                 x += 34
         y += 70
-    footer = "찰칵부산 · AI가 공식 관광 데이터로 작성한 여행기"
+    # 템플릿으로만 쓴 여행기에는 'AI 작성'이라고 쓰지 않는다 (D-06)
+    footer = "찰칵부산 · AI가 공식 관광 데이터로 작성한 여행기" if by_ai else "찰칵부산 · 공식 관광 데이터로 자동 작성한 여행기"
     d.text((60, H - 80), footer, font=_font("regular", 28), fill=SUB)
 
     buf = io.BytesIO()

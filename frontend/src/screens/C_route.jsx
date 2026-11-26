@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { fmtDate } from '../api.js'
-import { useApi } from '../hooks.js'
+import { useApi, useWide } from '../hooks.js'
 import MapView from '../components/MapView.jsx'
 import { ErrorBox, Icon, Loading, NumBadge, Photo, TopBar } from '../components/ui.jsx'
 
@@ -27,72 +27,82 @@ export function RouteMap() {
   const cur = data?.days.find((d) => d.day === day)
   const openPlace = (p) => nav(p.place_id ? `/trips/${tripId}/places/${encodeURIComponent(p.place_id)}?visit=${p.visit_id}` : `/trips/${tripId}/visits/${p.visit_id}`)
 
+  const legend = [...new Map(pins.map((p) => [p.type, p.color])).entries()]
   return (
     <div className="screen cta-tabs">
-      <TopBar title="동선" right={<Link className="icon-btn" to={`/trips/${tripId}/nearby`} aria-label="근처 못 가본 곳"><Icon name="spark" /></Link>} />
+      <TopBar title="동선" right={<Link className="icon-btn" to={`/trips/${tripId}/nearby`} aria-label="근처 못 가본 곳"><Icon name="search" /></Link>} />
+      <h2 className="title desktop-only">{all ? '전체 동선' : `${day}일차 동선`}</h2>
       <div className="segmented" role="tablist" aria-label="날짜 선택">
         {(data?.days || [{ day: 1 }]).map((d) => (
           <button key={d.day} role="tab" aria-selected={!all && day === d.day} className={!all && day === d.day ? 'on' : ''} onClick={() => set('day', d.day)}>{d.day}일차</button>
         ))}
         <button role="tab" aria-selected={all} className={all ? 'on' : ''} onClick={() => set('day', 'all')}>전체</button>
       </div>
-      <div className="segmented" style={{ marginTop: 8, boxShadow: 'none', background: 'var(--surface-2)' }}>
+      <div className="segmented route-switch" style={{ marginTop: 8 }}>
         <button className={view === 'map' ? 'on' : ''} onClick={() => set('view', 'map')}>지도</button>
         <button className={view === 'timeline' ? 'on' : ''} onClick={() => set('view', 'timeline')}>타임라인</button>
       </div>
       <ErrorBox error={error} onRetry={reload} />
       {loading && !data && <div style={{ marginTop: 12 }}><Loading lines={2} /></div>}
 
-      {data && view === 'map' && (
-        <>
-          <div style={{ marginTop: 12 }}>
-            <MapView tall pins={pins.map((p) => ({ ...p, id: p.visit_id, title: p.name }))} paths={pathsByDay(pins)} onPinClick={openPlace} />
-          </div>
-          <div className="sheet">
-            <div className="row between">
-              <div>
-                <b style={{ fontSize: 17 }}>{all ? '전체 일정' : `${day}일차 · ${fmtDate(cur?.date)}`}</b>
-                <div className="small muted">방문지 {pins.length}곳 · 사진 {pins.reduce((a, p) => a + p.photo_count, 0)}장</div>
+      {data && (
+        <div className="route-layout">
+          <div className={view === 'map' ? '' : 'mobile-hidden'}>
+            <div style={{ marginTop: 12 }}>
+              <MapView tall pins={pins.map((p) => ({ ...p, id: p.visit_id, title: p.name }))} paths={pathsByDay(pins)} onPinClick={openPlace} />
+            </div>
+            <div className="sheet">
+              <div className="row between">
+                <div>
+                  <b style={{ fontSize: 17 }}>{all ? '전체 일정' : `${day}일차, ${fmtDate(cur?.date)}`}</b>
+                  <div className="small muted">방문지 {pins.length}곳, 사진 {pins.reduce((a, p) => a + p.photo_count, 0)}장</div>
+                </div>
+                <span className="small muted">{all ? '' : cur?.time_range}</span>
               </div>
-              <span className="small muted">{all ? '' : cur?.time_range}</span>
-            </div>
-            <div className="strip" style={{ marginTop: 12 }}>
-              {pins.map((p) => (
-                <button key={p.visit_id} className="place-card" onClick={() => openPlace(p)} style={{ position: 'relative', border: 0, background: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}>
-                  <Photo id={p.rep_photo_id} className="" />
-                  <span className="num"><NumBadge n={p.order} color={p.color} size={24} /></span>
-                  <div className="nm">{p.name}</div>
-                  <div className="tiny muted">{p.type} · {p.time_range}</div>
-                </button>
-              ))}
-            </div>
-            <div className="row" style={{ flexWrap: 'wrap', gap: 6, margin: '10px 0 4px' }}>
-              {[...new Map(pins.map((p) => [p.type, p.color])).entries()].map(([t, c]) => (
-                <span key={t} className="tiny row" style={{ gap: 4 }}><i style={{ width: 10, height: 10, borderRadius: 5, background: c, display: 'inline-block' }} />{t}</span>
-              ))}
+              <div className="strip" style={{ marginTop: 12 }}>
+                {pins.map((p) => (
+                  <button key={p.visit_id} className="place-card" onClick={() => openPlace(p)} style={{ position: 'relative', border: 0, background: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}>
+                    <Photo id={p.rep_photo_id} className="" />
+                    <span className="num"><NumBadge n={p.order} color={p.color} size={24} /></span>
+                    <div className="nm">{p.name}</div>
+                    <div className="tiny muted">{p.type}, {p.time_range}</div>
+                  </button>
+                ))}
+              </div>
+              <Legend items={legend} />
             </div>
           </div>
-        </>
-      )}
 
-      {data && view === 'timeline' && (
-        <div className="card" style={{ marginTop: 12 }}>
-          <div className="tl">
-            {data.timeline.map((t) => (
-              <div key={t.visit_id}>
-                {t.leg_from_prev && (
-                  <div className="tl-leg"><Icon name={t.leg_from_prev.mode === '도보' ? 'walk' : 'bus'} size={14} />
-                    {t.leg_from_prev.mode} 약 {t.leg_from_prev.minutes}분 · {(t.leg_from_prev.distance_m / 1000).toFixed(1)}km</div>
-                )}
-                <button className="tl-item" onClick={() => openPlace(t)} style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 0, padding: '4px 0 12px', cursor: 'pointer' }}>
-                  <NumBadge n={t.order} color={t.color} size={24} />
-                  <div className="row between"><b>{t.name}</b><span className="small muted">{t.start}–{t.end}</span></div>
-                  <div className="small muted">{all ? `${t.day}일차 · ` : ''}{t.type} · 머문 시간 약 {t.stay_minutes}분 · 사진 {t.photo_count}장</div>
-                </button>
+          <div className={`route-side${view === 'timeline' ? '' : ' mobile-hidden'}`}>
+            <div className="card" style={{ marginTop: 12 }}>
+              <div className="row between" style={{ marginBottom: 6 }}>
+                <div>
+                  <b>{all ? '전체 일정' : `${day}일차, ${fmtDate(cur?.date)}`}</b>
+                  <div className="small muted">방문지 {pins.length}곳, 사진 {pins.reduce((a, p) => a + p.photo_count, 0)}장</div>
+                </div>
+                <span className="small muted">{all ? '' : cur?.time_range}</span>
               </div>
-            ))}
+              <ol className="line on-card">
+                {data.timeline.flatMap((t) => [
+                  t.leg_from_prev && (
+                    <li key={`leg-${t.visit_id}`}>
+                      <div className="leg"><Icon name={t.leg_from_prev.mode === '도보' ? 'walk' : 'bus'} size={14} />
+                        {t.leg_from_prev.mode} 약 {t.leg_from_prev.minutes}분, {(t.leg_from_prev.distance_m / 1000).toFixed(1)}km</div>
+                    </li>
+                  ),
+                  <li key={t.visit_id}>
+                    <NumBadge n={t.order} color={t.color} />
+                    <button className="tl-item" onClick={() => openPlace(t)}>
+                      <div className="row between"><b>{t.name}</b><span className="small muted">{t.start}–{t.end}</span></div>
+                      <div className="small muted">{all ? `${t.day}일차, ` : ''}{t.type}, 머문 시간 약 {t.stay_minutes}분, 사진 {t.photo_count}장</div>
+                    </button>
+                  </li>,
+                ].filter(Boolean))}
+              </ol>
+              <p className="tiny muted" style={{ margin: '8px 0 0' }}>이동 시간은 직선 거리에 보정 계수를 곱한 추정값이에요.</p>
+            </div>
+            <div className="desktop-only" style={{ marginTop: 10 }}><Legend items={legend} /></div>
           </div>
-          <p className="tiny muted" style={{ margin: '4px 0 0' }}>이동 시간은 직선 거리에 보정 계수를 곱한 추정값이에요.</p>
         </div>
       )}
 
@@ -100,6 +110,16 @@ export function RouteMap() {
         <button className="btn" onClick={() => nav(`/trips/${tripId}/nearby`)}>근처 못 가본 곳</button>
         <button className="btn primary" onClick={() => nav(`/trips/${tripId}/story/new`)}>여행기 만들기</button>
       </div>
+    </div>
+  )
+}
+
+function Legend({ items }) {
+  return (
+    <div className="row" style={{ flexWrap: 'wrap', gap: 12, margin: '10px 0 4px' }}>
+      {items.map(([t, c]) => (
+        <span key={t} className="tiny row" style={{ gap: 5 }}><i style={{ width: 10, height: 10, borderRadius: 5, background: c, display: 'inline-block' }} />{t}</span>
+      ))}
     </div>
   )
 }
@@ -114,7 +134,7 @@ export function PlaceDetail() {
   const visit = visits?.visits.find((v) => v.id === visitId) || visits?.visits.find((v) => v.place?.place_id === placeId)
 
   return (
-    <div className="screen">
+    <div className="screen narrow">
       <TopBar title="장소 상세" />
       {loading && <Loading />}
       <ErrorBox error={error} onRetry={reload} />
@@ -165,17 +185,23 @@ export function Nearby() {
   const shown = focus ? groups.filter((g) => g.visit_id === focus) : groups
   const recs = shown.flatMap((g) => g.items.map((i, k) => ({ ...i, id: `${g.visit_id}-${i.place_id}`, kind: 'rec', label: '★', key: k })))
   const visited = (route?.pins || []).filter((p) => !focus || p.visit_id === focus)
+  const wide = useWide()
+  const map = (
+    <MapView pins={[...visited.map((p) => ({ ...p, id: p.visit_id })), ...recs]} paths={focus ? [] : pathsByDay(visited)} dashed
+      onPinClick={(p) => p.kind === 'rec' && nav(`/trips/${tripId}/places/${encodeURIComponent(p.place_id)}`)} />
+  )
 
   return (
     <div className="screen">
       <TopBar title="근처 못 가본 곳" />
-      <p className="muted small" style={{ marginTop: 0 }}>방문지 주변 공식 관광 데이터 장소 중 이번 여행에서 가지 않은 곳이에요. 다음 부산 여행에 참고하세요.</p>
+      <h2 className="title desktop-only">근처 못 가본 곳</h2>
+      <p className="lede small">방문지 주변 공식 관광 데이터 장소 중 이번 여행에서 가지 않은 곳이에요. 다음 부산 여행에 참고하세요.</p>
       {loading && <Loading />}
       <ErrorBox error={error} onRetry={reload} />
       {data && (
-        <>
-          <MapView pins={[...visited.map((p) => ({ ...p, id: p.visit_id })), ...recs]} paths={focus ? [] : pathsByDay(visited)} dashed
-            onPinClick={(p) => p.kind === 'rec' && nav(`/trips/${tripId}/places/${encodeURIComponent(p.place_id)}`)} />
+        <div className="split">
+          <div>
+          {!wide && map}
           <div className="strip" style={{ margin: '12px 0 4px' }}>
             <button className={`chip ${!focus ? 'solid' : ''}`} style={{ minHeight: 36, border: 0, cursor: 'pointer' }} onClick={() => setFocus(null)}>전체</button>
             {groups.map((g) => (
@@ -199,7 +225,9 @@ export function Nearby() {
               ))}
             </div>
           ))}
-        </>
+          </div>
+          {wide && <div className="aside">{map}</div>}
+        </div>
       )}
     </div>
   )

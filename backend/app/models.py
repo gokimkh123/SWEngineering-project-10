@@ -195,6 +195,23 @@ class Job(Base):
     trip: Mapped[Trip] = relationship(back_populates="jobs")
 
 
+def _fit_string_lengths() -> None:
+    """글자 수 제한이 있는 열(String(n))에 넣는 값은 n자로 자른다.
+    PostgreSQL은 넘치면 저장 자체를 거부하는데(SQLite는 통과) AI가 쓴 긴 근거 문장 하나로 분석 전체가 실패하지 않게 한다."""
+    for mapper in Base.registry.mappers:
+        for col in mapper.columns:
+            n = getattr(col.type, "length", None)
+            if not isinstance(col.type, String) or not n:
+                continue
+
+            def fit(target, value, oldvalue, initiator, n=n):
+                return value[:n] if isinstance(value, str) and len(value) > n else value
+
+            event.listen(getattr(mapper.class_, col.key), "set", fit, retval=True)
+
+
+_fit_string_lengths()
+
 _connect_args = {"check_same_thread": False, "timeout": 30} if settings.database_url.startswith("sqlite") else {}
 engine = create_engine(settings.database_url, connect_args=_connect_args, future=True)
 

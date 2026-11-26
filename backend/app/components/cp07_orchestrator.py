@@ -18,6 +18,7 @@ from app.components.cp12_untagged import UntaggedPhotoResolver, VisitSpan
 from app.components.cp15_repository import TripRepository
 from app.components.cp16_place_cache import PlaceCache
 from app.components.cp17_media_store import MediaStore
+from app.config import settings
 from app.models import Job, Photo, SessionLocal, Trip, Visit, VisitStatus
 
 log = logging.getLogger("chalkak.orchestrator")
@@ -30,7 +31,6 @@ STAGES = [
 ]
 # 단계별 진행률 구간 (UI-01)
 SPAN = {"exif": (0.0, 0.25), "cluster": (0.25, 0.32), "match": (0.32, 0.92), "finalize": (0.92, 1.0)}
-MATCH_WORKERS = 4  # 방문지별 동시 처리 (QA-01)
 
 
 class AnalysisOrchestrator:
@@ -152,7 +152,7 @@ class AnalysisOrchestrator:
             self._update(job_id, "match", k / max(total, 1), {"match": {"done": k, "total": total}})
 
         if total:
-            with ThreadPoolExecutor(max_workers=MATCH_WORKERS) as pool:
+            with ThreadPoolExecutor(max_workers=settings.match_workers) as pool:  # 방문지별 동시 처리 (QA-01, MATCH_WORKERS)
                 list(pool.map(work, visit_ids))
 
         # ---- 4. 위치 없는 사진 추천(CP-12) → 마무리 ----

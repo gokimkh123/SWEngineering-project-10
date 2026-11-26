@@ -1,27 +1,25 @@
-// CP-01 Web Client — 화면 A1~D4 (요구사항분석서 6.1) + 하단 탭 (홈 · 내 여행 · 업로드 · 여행기 · MY)
+// CP-01 Web Client — 화면 A1~D4 (요구사항분석서 6.1). 첫 화면은 일기장(여행 목록 | 여행기), 새 여행기는 + 버튼
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import './styles.css'
-import { Tabs } from './components/ui.jsx'
-import { Analyzing, Home, MyPage, MyTrips, StoriesTab, Upload } from './screens/A_upload.jsx'
+import { initTheme } from './theme.js'
+import { Analyzing, MyPage, Upload } from './screens/A_upload.jsx'
 import { ConfirmDone, PlaceCheck, Untagged, VisitList } from './screens/B_confirm.jsx'
 import { Nearby, PlaceDetail, RouteMap } from './screens/C_route.jsx'
-import { ShareCard, StoryEdit, StoryView, StyleSelect } from './screens/D_story.jsx'
+import { ShareCard, StoryEdit, StyleSelect } from './screens/D_story.jsx'
+import { Journal, StoryView } from './screens/Journal.jsx'
 
-// 전체 화면 흐름(업로드·확인·편집)에서는 하단 탭을 숨긴다
-const NO_TABS = [/^\/upload/, /\/analyzing$/, /\/visits/, /\/untagged$/, /\/done$/, /\/story\/new$/, /\/edit$/, /\/share$/]
+initTheme() // 밝게·어둡게·기기 설정 (그리기 전에 적용)
 
 function Shell() {
-  const { pathname } = useLocation()
-  const showTabs = !NO_TABS.some((r) => r.test(pathname))
   return (
     <div className="app">
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Journal />} />
+        <Route path="/trips" element={<Journal />} />
+        <Route path="/stories" element={<Journal />} />
         <Route path="/upload" element={<Upload />} />
-        <Route path="/trips" element={<MyTrips />} />
-        <Route path="/stories" element={<StoriesTab />} />
         <Route path="/my" element={<MyPage />} />
         <Route path="/trips/:tripId/analyzing" element={<Analyzing />} />
         <Route path="/trips/:tripId/visits" element={<VisitList />} />
@@ -37,7 +35,6 @@ function Shell() {
         <Route path="/stories/:storyId/share" element={<ShareCard />} />
         <Route path="*" element={<div className="screen empty">페이지를 찾을 수 없어요</div>} />
       </Routes>
-      {showTabs && <Tabs />}
     </div>
   )
 }

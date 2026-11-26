@@ -9,6 +9,7 @@
                         실제 사진 시연 세트(var/demo_photos/vlm_replay.json)가 있으면 그 사진에는 미리 정한 응답을 쓴다.
 - VLM_PROVIDER=ollama : Ollama로 실행하는 오픈소스 멀티모달 모델 (예: qwen2.5vl:7b), JSON 스키마 강제
 - LLM_PROVIDER=fake   : 모의 LLM. 공식 데이터 필드를 그대로 써서 템플릿 문장을 만든다
+- LLM_PROVIDER=ollama : VLM과 같은 오픈소스 모델(Qwen)로 글쓰기 (사진 없이 확정 사실만 입력, 실패하면 템플릿으로 대체)
 - LLM_PROVIDER=anthropic : Claude Haiku (구조화 출력)
 - LLM_PROVIDER=gemini    : Gemini 무료 플랜 (JSON 응답)
 """
@@ -32,7 +33,10 @@ from app.config import settings
 PROMPT_DIR = Path(__file__).resolve().parent.parent / "prompts"
 VLM_MATCH_PROMPT = "vlm_match_v1"
 VLM_COMPARE_PROMPT = "vlm_compare_v1"
-STORY_PROMPT = "story_v1"
+STORY_PROMPT = "story_v4"  # v3: 날짜별·방문지 5곳 단위(문맥 4096토큰 초과 방지, D-04), 시간대 표현·한자 금지(D-07)
+                          # v4: 공식 데이터가 있는 방문지마다 사실 문장 1개 이상 (v3에서 사실 문장 없는 짧은 문단이 나옴)
+STORY_PART_VISITS = 5     # LLM 한 번에 넣는 방문지 수 상한 (입력+출력이 Ollama 슬롯 문맥 4096토큰 안에 들어가게)
+STORY_PART_TOKENS = 1500  # 부분 여행기 출력 토큰 상한
 
 VLM_MATCH_SCHEMA = {
     "type": "object",
@@ -91,6 +95,14 @@ PARAGRAPH_SCHEMA = {
     "required": ["sentences"],
     "additionalProperties": False,
 }
+TITLE_SCHEMA = {
+    "type": "object",
+    "properties": {"title": {"type": "string"}},
+    "required": ["title"],
+    "additionalProperties": False,
+}
+TITLE_PROMPT = ("부산 여행기의 제목을 한국어로 한 줄(30자 이내) 지으세요. 입력의 장소 이름과 날짜 수만 쓰고, "
+                "느낌표·과장 표현·한자·이모지는 쓰지 마세요. 출력은 JSON 스키마만 따르세요.")
 
 STYLE_GUIDES = {
     "blog": "블로그형 — 친근한 해요체, 읽는 사람에게 소개하듯이",
@@ -277,6 +289,9 @@ WEEKDAYS = "월화수목금토일"
 
 
 def _time_phrase(hour: int) -> str:
+    """방문 시각 → 시간대 표현 (사실 대조 CP-14의 시간대 범위와 맞춘다)."""
+    if hour < 5:
+        return "새벽"
     if hour < 11:
         return "아침"
     if hour < 14:
@@ -285,7 +300,9 @@ def _time_phrase(hour: int) -> str:
         return "오후"
     if hour < 19:
         return "해 질 무렵"
-    return "저녁"
+    if hour < 22:
+        return "저녁"
+    return "밤"
 
 
 def _first_sentence(text: str | None) -> str | None:
@@ -347,9 +364,9 @@ _OPENERS = {
     "brief": "{wd}요일 {t}, {n}에서 출발.",
 }
 _OTHER = {
-    "blog": "{t}에는 공식 정보가 없는 곳에서 잠시 쉬어 갔어요.",
-    "diary": "{t}에는 이름 모를 곳에서 잠시 쉬었다.",
-    "brief": "{t} · 기타 장소에서 휴식.",
+    "blog": "{t}에는 공식 정보가 없는 곳에 들렀어요.",
+    "diary": "{t}에는 공식 정보가 없는 곳에 들렀다.",
+    "brief": "{t} · 기타 장소 방문.",
 }
 _USETIME = {
     "blog": "{n} 운영시간은 '{u}'로 안내돼 있어요.",
@@ -357,8 +374,8 @@ _USETIME = {
     "brief": "운영시간: {u}.",
 }
 _CLOSERS = {
-    "blog": ("하루를 사진으로 돌아보니 동선이 한눈에 들어왔어요.", "사진 한 장 한 장에 그날의 바다 냄새가 남아 있는 것 같아요."),
-    "diary": ("사진을 다시 보니 하루가 짧게 느껴졌다.", "걷고 또 걸은 하루였다."),
+    "blog": ("사진으로 이날의 동선을 정리했어요.", "이날 다녀온 곳을 사진과 함께 정리했어요."),
+    "diary": ("사진을 보며 이날의 동선을 정리했다.", "이날 다녀온 곳을 사진으로 정리했다."),
     "brief": ("일정 끝.", "하루 마무리."),
 }
 
@@ -380,7 +397,7 @@ def fake_story(payload: dict, variant: int = 0) -> dict:
     return {"title": title, "paragraphs": paragraphs}
 
 
-def _fake_paragraph(style: str, visits: list[dict], variant: int, first_day: bool) -> list[dict]:
+def _fake_paragraph(style: str, visits: list[dict], variant: int, first_day: bool, closer: bool = True) -> list[dict]:
     out = []
     for i, v in enumerate(visits):
         t = _time_phrase(int(v["start_hour"]))
@@ -399,9 +416,14 @@ def _fake_paragraph(style: str, visits: list[dict], variant: int, first_day: boo
         if facts.get("usetime") and (variant + i) % 2 == 0:
             out.append({"text": _USETIME[style].format(n=name, u=facts["usetime"]), "place_ids": [pid],
                         "fields": ["usetime"], "is_fact": True})
-    if out:
+    if out and closer:
         out.append({"text": _CLOSERS[style][variant % 2], "place_ids": [], "fields": [], "is_fact": False})
     return out
+
+
+def template_title(payload: dict) -> str:
+    """공식 데이터만으로 만든 제목 (LLM 제목이 실패하거나 한자가 섞였을 때)."""
+    return fake_story(payload)["title"]
 
 
 # ======================================================================
@@ -429,7 +451,9 @@ class AIGateway:
             vlm = "모의 VLM (시연 사진은 미리 정한 응답, 그 밖은 색 분포 + 거리 휴리스틱)"
         else:
             vlm = "모의 VLM (색 분포 + 거리 휴리스틱)"
-        if settings.llm_provider == "anthropic":
+        if settings.llm_provider == "ollama":
+            llm = settings.llm_model or settings.vlm_model
+        elif settings.llm_provider == "anthropic":
             llm = settings.anthropic_model
         elif settings.llm_provider == "gemini":
             llm = settings.gemini_model
@@ -466,20 +490,44 @@ class AIGateway:
         return json.dumps(fake_vlm_compare(jpeg, neighbors), ensure_ascii=False)
 
     def _ollama(self, prompt: str, images: list[bytes], schema: dict) -> str:
-        body = {
-            "model": settings.vlm_model,
-            "stream": False,
-            "format": schema,
-            "options": {"temperature": 0},
-            "messages": [{"role": "user", "content": prompt,
-                          "images": [base64.b64encode(i).decode() for i in images]}],
-        }
+        messages = [{"role": "user", "content": prompt, "images": [base64.b64encode(i).decode() for i in images]}]
+        return self._ollama_chat(settings.vlm_model, messages, schema, {"temperature": 0}, settings.vlm_timeout, "VLM")
+
+    def _ollama_chat(self, model: str, messages: list[dict], schema: dict, options: dict, timeout: float, what: str) -> str:
+        """Ollama /api/chat (JSON 스키마로 출력 형식 강제). 추론 모드가 있는 모델(Qwen3 등)도 바로 답하게 think=false."""
+        body = {"model": model, "stream": False, "format": schema, "options": options, "think": False, "messages": messages}
         try:
-            r = httpx.post(f"{settings.ollama_url}/api/chat", json=body, timeout=60.0)
+            r = httpx.post(f"{settings.ollama_url}/api/chat", json=body, timeout=timeout)
+            if r.status_code == 400 and "think" in r.text:  # 추론 모드 설정을 모르는 모델
+                body.pop("think")
+                r = httpx.post(f"{settings.ollama_url}/api/chat", json=body, timeout=timeout)
             r.raise_for_status()
-            return r.json()["message"]["content"]
+            data = r.json()
+            if data.get("done_reason") == "length":  # 문맥·출력 한도에서 잘린 응답 (D-04 원인) → 잘린 JSON을 쓰지 않는다
+                raise AIError(f"{what} 응답이 길이 한도에서 잘렸어요 (done_reason=length)")
+            return data["message"]["content"]
         except (httpx.HTTPError, KeyError, ValueError) as e:
-            raise AIError(f"VLM 호출 실패: {e}") from e
+            raise AIError(f"{what} 호출 실패: {type(e).__name__}") from e
+
+    def warm_up(self, tries: int = 60, wait_s: float = 5.0) -> bool:
+        """서버 시작 때 VLM을 GPU에 미리 올려 둔다(첫 사용자가 모델 적재 시간을 기다리지 않게).
+        VLM 서버가 늦게 뜨는 경우를 위해 5초 간격으로 다시 시도하고, 끝내 안 되면 첫 요청 때 올라간다."""
+        if settings.vlm_provider != "ollama":
+            return False
+        # 빈 회색 사진 한 장으로 물어 영상 처리 경로까지 준비시킨다(글만 보내면 첫 사진 요청이 30초 넘게 걸림)
+        buf = io.BytesIO()
+        Image.new("RGB", (512, 384), (128, 128, 128)).save(buf, "JPEG")
+        body = {"model": settings.vlm_model, "stream": False, "think": False, "options": {"num_predict": 1},
+                "messages": [{"role": "user", "content": "OK", "images": [base64.b64encode(buf.getvalue()).decode()]}]}
+        for _ in range(tries):
+            try:
+                r = httpx.post(f"{settings.ollama_url}/api/chat", json=body, timeout=settings.vlm_timeout)
+                if r.status_code == 200:
+                    return True
+            except httpx.HTTPError:
+                pass
+            time.sleep(wait_s)
+        return False
 
     # ---- LLM (사진 없이 확정 사실만 전달) ----
     def llm_story(self, payload: dict) -> str:
@@ -491,6 +539,26 @@ class AIGateway:
             return json.dumps(fake_story(payload), ensure_ascii=False)
         return self._llm(system, json.dumps(payload, ensure_ascii=False), STORY_SCHEMA)
 
+    def llm_story_part(self, payload: dict) -> str:
+        """하루(또는 하루의 방문지 최대 5곳)만 넣고 문장 목록을 받는다 (D-04: 큰 여행도 문맥 한도 안에서 생성)."""
+        self._count("llm_story_part")
+        style = payload.get("style", "blog")
+        if settings.llm_provider == "fake":
+            self._fake_delay()
+            sents = _fake_paragraph(style, payload["visits"], 0, first_day=payload.get("first", False), closer=payload.get("last", True))
+            return json.dumps({"sentences": sents}, ensure_ascii=False)
+        system = load_prompt(STORY_PROMPT).replace("{style_guide}", STYLE_GUIDES.get(style, STYLE_GUIDES["blog"]))
+        return self._llm(system, json.dumps(payload, ensure_ascii=False), PARAGRAPH_SCHEMA, num_predict=STORY_PART_TOKENS)
+
+    def llm_title(self, payload: dict) -> str:
+        """여행기 제목 (장소 이름·날짜 수만 입력)."""
+        self._count("llm_title")
+        if settings.llm_provider == "fake":
+            return json.dumps({"title": template_title(payload)}, ensure_ascii=False)
+        brief = {"days": sorted({v["day"] for v in payload["visits"]}),
+                 "places": [v["name"] for v in payload["visits"] if v.get("name")]}
+        return self._llm(TITLE_PROMPT, json.dumps(brief, ensure_ascii=False), TITLE_SCHEMA, num_predict=200)
+
     def llm_rewrite_paragraph(self, payload: dict, variant: int) -> str:
         """문단 다시 쓰기 (FR-10): 해당 날짜의 방문지 사실만 넣고 문단 하나를 새로 쓴다."""
         self._count("llm_rewrite")
@@ -500,10 +568,27 @@ class AIGateway:
             sents = _fake_paragraph(style, payload["visits"], variant, first_day=payload.get("first_day", False))
             return json.dumps({"sentences": sents}, ensure_ascii=False)
         system = load_prompt(STORY_PROMPT).replace("{style_guide}", STYLE_GUIDES.get(style, STYLE_GUIDES["blog"]))
-        system += "\n이번에는 입력된 하루치 방문지로 문단 하나만, 이전과 다른 표현으로 다시 쓰세요."
-        return self._llm(system, json.dumps(payload, ensure_ascii=False), PARAGRAPH_SCHEMA)
+        system += ("\n이번에는 입력된 하루치 방문지로 문단 하나만 다시 쓰세요. previous는 지금 문단이에요."
+                   " previous의 문장을 그대로 옮기지 말고 문장 순서·첫머리·연결 표현을 바꾸세요. 사실은 입력 데이터만 쓰세요.")
+        # 같은 입력이면 낮은 온도에서는 같은 문단이 다시 나와서, 다시 쓰기만 온도를 올리고 시드를 바꾼다
+        return self._llm(system, json.dumps(payload, ensure_ascii=False), PARAGRAPH_SCHEMA, temperature=0.7, seed=variant * 7919,
+                         num_predict=STORY_PART_TOKENS)
 
-    def _llm(self, system: str, user: str, schema: dict) -> str:
+    def template_story(self, payload: dict) -> str:
+        """LLM 없이 공식 데이터 필드로 만든 여행기(모의 LLM과 같은 템플릿). 실제 LLM이 실패할 때 대신 쓴다."""
+        return json.dumps(fake_story(payload), ensure_ascii=False)
+
+    def template_paragraph(self, payload: dict, variant: int) -> str:
+        sents = _fake_paragraph(payload.get("style", "blog"), payload["visits"], variant, first_day=payload.get("first_day", False))
+        return json.dumps({"sentences": sents}, ensure_ascii=False)
+
+    def _llm(self, system: str, user: str, schema: dict, temperature: float = 0.3, seed: int | None = None,
+             num_predict: int = 3000) -> str:
+        if settings.llm_provider == "ollama":
+            messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
+            options = {"temperature": temperature, "num_predict": num_predict} | ({"seed": seed} if seed is not None else {})
+            return self._ollama_chat(settings.llm_model or settings.vlm_model, messages, schema,
+                                     options, settings.llm_timeout, "LLM")
         if settings.llm_provider == "anthropic":
             return self._anthropic(system, user, schema)
         if settings.llm_provider == "gemini":

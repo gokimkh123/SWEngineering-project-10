@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app import jobs
 from app.adapters.cp19_ai_gateway import AIError
-from app.api.deps import device_token, get_db
+from app.api.deps import device_token, ensure_capacity, get_db
 from app.api.serializers import story_out
 from app.components.cp06_share_card import render_share_card
 from app.components.cp13_story import STYLES, StoryNotReady
@@ -20,6 +20,7 @@ from app.models import Job, Story, VisitStatus
 from app.services import repo, story_generator
 
 router = APIRouter(tags=["IF-04 Story"])
+MAX_STORIES_PER_TRIP = 10
 
 
 class StoryCreate(BaseModel):
@@ -54,6 +55,9 @@ def create_story(trip_id: str, body: StoryCreate, owner: str = Depends(device_to
         raise HTTPException(400, "지원하지 않는 문체예요")
     if not t.visits or any(not VisitStatus(v.status).is_final for v in t.visits):
         raise HTTPException(409, "확인이 필요한 방문지를 먼저 확정해 주세요")
+    if len(t.stories) >= MAX_STORIES_PER_TRIP:
+        raise HTTPException(429, f"여행기는 여행 하나에 {MAX_STORIES_PER_TRIP}개까지 만들 수 있어요")
+    ensure_capacity(db, owner)
     story = Story(trip_id=t.id, style=body.style, status="generating")
     db.add(story)
     db.flush()
@@ -120,7 +124,8 @@ def share_card(story_id: str, owner: str = Depends(device_token), db: Session = 
     first = next((v for v in sorted(s.trip.visits, key=lambda v: v.order) if v.rep_photo_id), None)
     thumb = media_store.read_thumb(first.rep_photo_id) if first else None
     try:
-        png = render_share_card(s.title, out["date_range"] + f" · 방문지 {out['visit_count']}곳", s.route_summary, thumb)
+        by_ai = any(p.get("source", "llm") != "template" for p in (s.body or [])) and not (s.model or "").startswith("템플릿")
+        png = render_share_card(s.title, out["date_range"] + f" · 방문지 {out['visit_count']}곳", s.route_summary, thumb, by_ai=by_ai)
     except Exception as e:  # pragma: no cover
         raise HTTPException(500, "공유 카드를 만들지 못했어요. 다시 시도해 주세요") from e
     media_store.card_path(s.id).write_bytes(png)

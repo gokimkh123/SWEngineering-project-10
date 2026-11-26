@@ -1,60 +1,148 @@
 # 찰칵부산 배포 구성 (설계서 2.5 배포 다이어그램: web · api · worker · redis · postgres · vlm + 공유 볼륨)
-# 실행: cp .env.example .env && docker compose up --build   → http://localhost:8080
-# 오픈소스 VLM까지 띄우려면: docker compose --profile vlm up --build  (.env에 VLM_PROVIDER=ollama)
+# 공개 접속은 Cloudflare 무료 터널(tunnel)로만 받는다. 이 PC의 포트는 127.0.0.1:8080(확인용) 하나만 연다.
+#
+#   처음 한 번: deploy/setup.sh          (비밀값 생성 → 빌드 → 실행 → VLM 모델 받기 → 공개 주소 출력)
+#   공개 주소:  deploy/url.sh             (터널을 다시 시작하면 주소가 바뀜)
+#   끄기:       docker compose down       (데이터는 볼륨에 남음)
+#
+# 비밀값·설정은 deploy/chalkak.env (저장소에 올리지 않음, 예시는 deploy/chalkak.env.example)
+name: chalkak
+
+x-hardening: &hardening
+  restart: unless-stopped
+  security_opt: ["no-new-privileges:true"]
+  logging:
+    driver: json-file
+    options: { max-size: "10m", max-file: "3" }
+
+x-backend: &backend
+  <<: *hardening
+  build: ./backend
+  image: chalkak-backend:local
+  env_file: deploy/chalkak.env
+  environment:
+    DATA_DIR: /data
+    OLLAMA_URL: http://vlm:11434
+  volumes: ["media:/data"]
+  read_only: true
+  cap_drop: [ALL]
+  pids_limit: 256
+  depends_on:
+    postgres: { condition: service_healthy }
+    redis: { condition: service_healthy }
+
 services:
+  # 공개 입구: Cloudflare Quick Tunnel (계정 없이 무료, 주소는 *.trycloudflare.com 임의 주소)
+  tunnel:
+    <<: *hardening
+    image: cloudflare/cloudflared:2026.10.0
+    command: ["tunnel", "--no-autoupdate", "--url", "http://web:8080"]
+    networks: [edge]
+    read_only: true
+    cap_drop: [ALL]
+    depends_on:
+      web: { condition: service_healthy }
+
+  # 웹 서버: React 정적 파일 + /api 프록시, 접속 제한(초당 요청 수)·보안 헤더
   web:
-    build:
-      context: ./frontend
-      args:
-        VITE_KAKAO_JS_KEY: ${VITE_KAKAO_JS_KEY:-}
-    ports: ["8080:80"]
-    depends_on: [api]
+    <<: *hardening
+    build: ./frontend
+    image: chalkak-web:local
+    networks: [edge, app]
+    ports: ["127.0.0.1:8080:8080"]   # 이 PC에서만 확인용 (외부 공개는 tunnel 만)
+    read_only: true
+    tmpfs: ["/tmp:size=512m"]     # 업로드 임시 파일(한 요청 최대 45MB × 동시 업로드)
+    cap_drop: [ALL]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    depends_on:
+      api: { condition: service_healthy }
 
+  # API 서버 (CP-02~04, 06, 10, 14~19)
   api:
-    build: ./backend
-    env_file: .env
-    environment: &backend-env
-      DATA_DIR: /data
-      DATABASE_URL: postgresql+psycopg://chalkak:chalkak@postgres:5432/chalkak
-      REDIS_URL: redis://redis:6379/0
-      OLLAMA_URL: http://vlm:11434
-    volumes: [media:/data]  # 임시 이미지·썸네일 공유 볼륨 (CP-17)
-    depends_on:
-      postgres: { condition: service_healthy }
-      redis: { condition: service_started }
+    <<: *backend
+    networks: [app, data, ai]
+    tmpfs: ["/tmp:size=512m"]   # 업로드 임시 파일
+    mem_limit: 3g
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
 
+  # 분석·여행기 워커 (CP-07~09, 11~13): 작업 큐에서 하나씩 꺼내 처리 → GPU를 한 작업씩만 씀
   worker:
-    build: ./backend
+    <<: *backend
     command: ["python", "-m", "app.worker"]
-    env_file: .env
-    environment: *backend-env
-    volumes: [media:/data]
-    depends_on:
+    networks: [data, ai]
+    depends_on:   # 표 만들기(init_db)는 api가 먼저 끝내게
       postgres: { condition: service_healthy }
-      redis: { condition: service_started }
+      redis: { condition: service_healthy }
+      api: { condition: service_healthy }
+    tmpfs: ["/tmp:size=256m"]
+    mem_limit: 4g
 
   redis:
-    image: redis:7-alpine
-
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: chalkak
-      POSTGRES_PASSWORD: chalkak
-      POSTGRES_DB: chalkak
-    volumes: [pgdata:/var/lib/postgresql/data]
+    <<: *hardening
+    image: redis:7.4.12-alpine
+    env_file: deploy/chalkak.env
+    command: ["sh", "-c", "exec redis-server --requirepass \"$$REDIS_PASSWORD\" --save '' --appendonly no --maxmemory 256mb"]
+    networks: [data]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U chalkak"]
-      interval: 3s
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
       retries: 20
 
-  vlm:  # 오픈소스 VLM 추론 서버 (사진은 외부 AI로 보내지 않음, AD-08)
-    image: ollama/ollama:latest
-    profiles: ["vlm"]
-    volumes: [ollama:/root/.ollama]
-    # 처음 한 번: docker compose exec vlm ollama pull qwen2.5vl:7b
+  postgres:
+    <<: *hardening
+    image: postgres:17.12-alpine
+    env_file: deploy/chalkak.env
+    environment:
+      POSTGRES_USER: chalkak
+      POSTGRES_DB: chalkak
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    networks: [data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chalkak -d chalkak"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  # 오픈소스 VLM 추론 서버 (Qwen VL, 이 PC의 GPU). 사진은 외부 AI로 보내지 않는다 (AD-08)
+  vlm:
+    <<: *hardening
+    image: ollama/ollama:0.40.17
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_KEEP_ALIVE: 30m        # 30분 동안 요청이 없으면 GPU 메모리에서 내림
+      OLLAMA_NUM_PARALLEL: "2"
+      OLLAMA_MAX_QUEUE: "64"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_NO_CLOUD: "1"          # ollama.com 원격 모델 기능 끔 (사진이 이 PC 밖으로 나가지 않게)
+    volumes: ["ollama:/root/.ollama"]
+    networks: [ai]                  # 포트를 열지 않음: api·worker만 접근
+    deploy:
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, count: all, capabilities: [gpu] }]
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+networks:
+  edge: {}                # tunnel ↔ web
+  app: {}                 # web ↔ api
+  data: { internal: true }  # api·worker ↔ redis·postgres (바깥 인터넷 차단)
+  ai: {}                  # api·worker ↔ vlm (vlm은 모델 내려받기에 인터넷 필요)
 
 volumes:
-  media:
+  media:    # 썸네일·임시 원본·공유 카드 (설계서 2.5 공유 볼륨)
   pgdata:
-  ollama:
+  ollama:   # 내려받은 VLM 모델

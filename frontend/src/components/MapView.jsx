@@ -25,7 +25,7 @@ function loadKakao() {
 function pinHtml(p) {
   const cls = p.kind === 'rec' ? 'pin rec' : p.ghost ? 'pin ghost' : 'pin'
   const label = p.label ?? p.order ?? ''
-  return `<div class="${cls}" style="background:${p.color || '#F05C2C'}">${label}</div>`
+  return `<div class="${cls}" style="background:${p.color || '#1E88E5'}">${label}</div>`
 }
 
 /**
@@ -54,7 +54,7 @@ export default function MapView({ pins = [], paths = [], onPinClick, tall = fals
       }).catch(() => !cancelled && setProvider('leaflet'))
     } else {
       const map = L.map(el.current, { zoomControl: false, attributionControl: false }).setView([35.15, 129.1], 12)
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map)
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map)
       L.control.zoom({ position: 'topright' }).addTo(map)
       state.current = { map, layer: L.layerGroup().addTo(map), ready: true }
       draw()
@@ -81,7 +81,7 @@ export default function MapView({ pins = [], paths = [], onPinClick, tall = fals
         if (path.length < 2) return
         const line = new kakao.maps.Polyline({
           path: path.map((q) => new kakao.maps.LatLng(q.lat, q.lng)),
-          strokeWeight: 4, strokeColor: '#F05C2C', strokeOpacity: 0.85, strokeStyle: dashed ? 'shortdash' : 'solid',
+          strokeWeight: 4, strokeColor: '#1E88E5', strokeOpacity: 0.9, strokeStyle: dashed ? 'shortdash' : 'solid',
         })
         line.setMap(map)
         s.overlays.push(line)
@@ -105,7 +105,7 @@ export default function MapView({ pins = [], paths = [], onPinClick, tall = fals
     layer.clearLayers()
     paths.forEach((path) => {
       if (path.length < 2) return
-      L.polyline(path.map((q) => [q.lat, q.lng]), { color: '#F05C2C', weight: 4, opacity: 0.85, dashArray: dashed ? '6 8' : null }).addTo(layer)
+      L.polyline(path.map((q) => [q.lat, q.lng]), { color: '#1E88E5', weight: 4, opacity: 0.9, dashArray: dashed ? '6 8' : null }).addTo(layer)
     })
     valid.forEach((p) => {
       const icon = L.divIcon({ className: 'leaflet-div-icon clear', html: pinHtml(p), iconSize: [30, 30], iconAnchor: [15, 15] })

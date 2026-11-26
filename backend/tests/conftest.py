@@ -15,6 +15,8 @@ for k in ("TOUR_API_KEY", "BUSAN_API_KEY", "KAKAO_REST_KEY"):
     os.environ.pop(k, None)
 os.environ["VLM_PROVIDER"] = "fake"
 os.environ["LLM_PROVIDER"] = "fake"
+for k in ("PUBLIC_MODE", "DEMO_SEED", "RETENTION_DAYS", "MATCH_WORKERS", "LLM_MODEL", "MAX_ACTIVE_JOBS", "MAX_TRIPS_PER_DAY"):
+    os.environ.pop(k, None)  # 배포 설정이 테스트에 섞이지 않게
 
 BACKEND = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BACKEND))

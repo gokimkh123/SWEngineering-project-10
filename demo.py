@@ -114,7 +114,7 @@ def main() -> None:
     ap.add_argument("--reset", action="store_true", help="이전 시연 기록 지우기")
     ap.add_argument("--no-browser", action="store_true")
     ap.add_argument("--photos", choices=["real", "synthetic"],
-                    help="시연 사진 세트를 다시 만든다 (real: 저장소 루트의 실제 사진 9장, synthetic: 합성 사진 24장)")
+                    help="시연 사진 세트를 다시 만든다 (real: photos/ 폴더의 실제 사진 9장, synthetic: 합성 사진 24장)")
     args = ap.parse_args()
     if sys.version_info < (3, 10):
         sys.exit("Python 3.10 이상이 필요해요.")

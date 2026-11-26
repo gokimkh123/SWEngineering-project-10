@@ -1,6 +1,6 @@
 """실제 사진으로 시연 세트를 만든다 (발표용, 임의 각색).
 
-팀원이 올린 사진 9장(저장소 루트의 KakaoTalk_*.jpg)은 부산에서 찍은 사진이 아니다(담양·서울·경주·일본·중국, 2022~2025년).
+팀원이 올린 사진 9장(photos/KakaoTalk_*.jpg, 커밋 안 됨)은 부산에서 찍은 사진이 아니다.
 그래서 부산 1박 2일(2026-02-07~08)에 찍은 것처럼 촬영 시각·위치를 아래 PLAN대로 임의로 정해 복사본에 새로 넣는다.
 
 - 원본은 읽기만 한다. 복사본은 방향을 바로잡고(긴 변 2000px), 원래 EXIF(실제 GPS·기기 정보)를 모두 버린 뒤
@@ -11,7 +11,7 @@
   광화문 → 근처 후보와 맞지 않는다고 답하는 장면(선택필요 → 기타 장소), 동궁과 월지 → 촬영 정보가 없는 사진(직접 고르거나 제외).
 
 사용: python scripts/import_demo_photos.py [--src 원본 폴더] [--out 출력 폴더] [--check]
-      기본 원본: 저장소 루트, 기본 출력: backend/var/demo_photos (기존 시연 사진은 지운다)
+      기본 원본: 저장소의 photos/ (없으면 저장소 루트), 기본 출력: backend/var/demo_photos (기존 시연 사진은 지운다)
       합성 세트로 되돌리기: python scripts/make_demo_photos.py
 """
 from __future__ import annotations
@@ -103,11 +103,14 @@ def convert(src: Path, dst: Path, taken: datetime | None, gps: tuple[float, floa
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="실제 사진으로 시연 세트 만들기 (촬영 시각·위치 임의 각색)")
-    ap.add_argument("--src", type=Path, default=BACKEND.parent)
+    ap.add_argument("--src", type=Path, help="원본 폴더 (기본: 저장소의 photos/, 없으면 저장소 루트)")
     ap.add_argument("--out", type=Path, default=BACKEND / "var" / "demo_photos")
     ap.add_argument("--check", action="store_true", help="원본이 다 있는지만 확인 (없으면 종료 코드 2)")
     args = ap.parse_args()
 
+    if args.src is None:
+        root = BACKEND.parent
+        args.src = next((d for d in (root / "photos", root) if all((d / p["src"]).exists() for p in PLAN)), root / "photos")
     missing = [p["src"] for p in PLAN if not (args.src / p["src"]).exists()]
     if missing:
         print(f"원본 사진이 없어요 ({args.src}): {', '.join(missing)}", file=sys.stderr)

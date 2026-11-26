@@ -27,7 +27,7 @@ TAG_GPS_IFD = 0x8825
 TAG_DATETIME_ORIGINAL = 0x9003
 TAG_DATETIME_DIGITIZED = 0x9004
 
-THUMB_MAX_PX = 640  # 화면 표시용 썸네일 (DR-04)
+THUMB_MAX_PX = 1280  # 화면 표시용 썸네일 (DR-04) — 여행기 위 큰 사진에도 쓰므로 긴 변 1280px
 VLM_MAX_PX = 512  # VLM 입력용 축소본 (AIR-01, AIR-07)
 
 

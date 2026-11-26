@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { api, fmtDate } from '../api.js'
-import { useApi } from '../hooks.js'
+import { useApi, useWide } from '../hooks.js'
+import MapView from '../components/MapView.jsx'
 import { ErrorBox, Icon, Loading, NumBadge, Photo, StatusChip, TopBar, useToast } from '../components/ui.jsx'
 
 const typeColor = (v) => v.place?.color || v.ai?.place?.color || '#8A8F98'
@@ -18,6 +19,7 @@ export function VisitList() {
   const { tripId } = useParams()
   const nav = useNavigate()
   const { data, error, loading, reload } = useApi(`/trips/${tripId}/visits`)
+  const wide = useWide()
   if (loading && !data) return <div className="screen"><TopBar title="방문지" /><Loading /></div>
   if (error) return <div className="screen"><TopBar title="방문지" /><ErrorBox error={error} onRetry={reload} /></div>
   const { visits, untagged, trip } = data
@@ -28,8 +30,10 @@ export function VisitList() {
   return (
     <div className="screen no-tabs">
       <TopBar title="방문지 확인" onBack={() => nav('/')} />
+      <div className="split">
+      <div>
       <h2 className="title">방문지 {visits.length}곳을 찾았어요</h2>
-      <p className="muted small" style={{ marginTop: 0 }}>
+      <p className="lede small">
         AI가 {auto}곳을 확정했어요. {asks.length ? `${asks.length}곳만 확인해 주세요.` : '확인할 곳이 없어요.'}
       </p>
 
@@ -40,29 +44,41 @@ export function VisitList() {
       )}
 
       {groupByDay(visits).map((g) => (
-        <div key={g.day}>
-          <div className="section-title">{g.day}일차 · {fmtDate(g.date)}</div>
+        <section key={g.day}>
+          <div className="day-label">{g.day}일차 <span className="muted">{fmtDate(g.date)}</span></div>
+          <ol className="line">
           {g.list.map((v) => (
-            <Link key={v.id} to={`/trips/${tripId}/visits/${v.id}`} className={`card visit-card${v.needs_user ? ' attention' : ''}`} style={{ color: 'inherit' }}>
-              <div style={{ position: 'relative' }}>
-                <Photo id={v.rep_photo_id} />
-                <span style={{ position: 'absolute', top: -6, left: -6 }}><NumBadge n={v.order} color={typeColor(v)} size={24} /></span>
-              </div>
+            <li key={v.id}>
+            <NumBadge n={v.order} color={typeColor(v)} />
+            <Link to={`/trips/${tripId}/visits/${v.id}`} className={`visit-card${v.needs_user ? ' attention' : ''}`}>
+              <Photo id={v.rep_photo_id} />
               <div style={{ minWidth: 0 }}>
                 <div className="name" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {v.place?.name || (v.status === '기타장소' ? '기타 장소' : v.ai?.place ? `${v.ai.place.name}?` : '어디였을까요?')}
                 </div>
-                <div className="small muted">{v.start}–{v.end} · 사진 {v.photo_count}장</div>
-                <div className="row" style={{ gap: 6, marginTop: 4 }}>
+                <div className="small muted">{v.start}–{v.end}, 사진 {v.photo_count}장</div>
+                <div className="row" style={{ gap: 10, marginTop: 2 }}>
                   <StatusChip status={v.status} />
                   {v.ai?.confidence != null && <span className="tiny muted">AI 확신도 {Math.round(v.ai.confidence * 100)}%</span>}
                 </div>
               </div>
               <span className="muted">›</span>
             </Link>
+            </li>
           ))}
-        </div>
+          </ol>
+        </section>
       ))}
+      </div>
+      {wide && (
+        <div className="aside">
+          <MapView pins={visits.filter((v) => v.center).map((v) => ({ id: v.id, lat: v.center.lat, lng: v.center.lng, order: v.order, color: typeColor(v), title: v.place?.name }))}
+            paths={groupByDay(visits).map((g) => g.list.filter((v) => v.center).map((v) => v.center))}
+            onPinClick={(p) => nav(`/trips/${tripId}/visits/${p.id}`)} />
+          <p className="tiny muted" style={{ marginTop: 8 }}>지도의 번호를 누르면 그 방문지를 열어요.</p>
+        </div>
+      )}
+      </div>
 
       <div className="bottom-cta">
         {asks.length > 0 ? (
@@ -153,15 +169,19 @@ export function PlaceCheck() {
     <div className="screen no-tabs">
       {toast}
       <TopBar title={title} />
+      <div className="check-grid">
+      <div>
       <div className="hero-photo">
         <Photo id={v.rep_photo_id} className="" />
-        <span className="overlay"><Icon name="clock" size={13} /> {v.start} · 사진 {v.photo_count}장</span>
+        <span className="overlay"><Icon name="clock" size={13} /> {v.start}, 사진 {v.photo_count}장</span>
       </div>
       {v.photo_ids.length > 1 && (
         <div className="strip" style={{ marginTop: 8 }}>
           {v.photo_ids.map((pid) => <Photo key={pid} id={pid} className="thumb" style={{ width: 56, height: 56 }} />)}
         </div>
       )}
+      </div>
+      <div>
 
       <h2 className="title" style={{ marginTop: 16 }}>이 사진, 어디서 찍었나요?</h2>
       <div className="row between small muted">
@@ -182,7 +202,7 @@ export function PlaceCheck() {
                 {c.distance_m != null ? `촬영 위치에서 ${c.distance_m}m · ` : ''}{c.source_name}
               </span>
             </span>
-            {c.ai_pick && <span className="chip solid"><Icon name="spark" size={12} /> AI 추천</span>}
+            {c.ai_pick && <span className="chip solid">AI 추천</span>}
           </button>
         ))}
         {results && results.length === 0 && <div className="notice">검색 결과가 없어요. ‘기타 장소’로 저장할 수 있어요.</div>}
@@ -204,13 +224,15 @@ export function PlaceCheck() {
             {v.ai.confidence != null && <span className="small muted">확신도 {Math.round(v.ai.confidence * 100)}%</span>}</div>
           <ul>{reasonLines.map((l) => <li key={l}>{l}</li>)}</ul>
           <div className="tiny muted" style={{ marginTop: 8 }}>
-            근거: {aiPick ? `${aiPick.source_name} 장소 정보` : '후보 목록'} · 대표 사진 1장 · 사진 속 인물은 분석하지 않아요
+            {aiPick ? `${aiPick.source_name} 장소 정보` : '후보 목록'}과 대표 사진 1장으로 판단했어요. 사진 속 사람은 분석하지 않아요.
           </div>
         </div>
       )}
       {v.note && !v.ai?.reason && <div className="notice warn" style={{ marginTop: 12 }}>{v.note}</div>}
 
       <ErrorBox error={saveError} />
+      </div>
+      </div>
       <div className="bottom-cta">
         <button className="btn ghost" style={{ flex: '0 0 auto' }} onClick={() => save(true)} disabled={saving}>기타 장소</button>
         <button className="btn primary" disabled={!selected || saving} onClick={() => save(false)}>
@@ -256,6 +278,7 @@ export function Untagged() {
       <p className="muted small" style={{ marginTop: 0 }}>촬영 시각으로 앞뒤 방문지를 찾아 추천했어요. 애매하면 AI가 사진을 비교했어요.</p>
       <ErrorBox error={err} />
       {photos.length === 0 && <div className="card empty">배정할 사진이 없어요</div>}
+      <div className="untagged-grid">
       {photos.map((p) => {
         const sel = choice[p.id] || p.suggested_visit_id || ''
         return (
@@ -280,6 +303,7 @@ export function Untagged() {
           </div>
         )
       })}
+      </div>
     </div>
   )
 }
@@ -296,15 +320,15 @@ export function ConfirmDone() {
   const notReady = trip.status !== 'ready'
 
   return (
-    <div className="screen no-tabs">
+    <div className="screen no-tabs narrow">
       <TopBar title="확정 완료" onBack={() => nav(`/trips/${tripId}/visits`)} />
       <div style={{ textAlign: 'center', padding: '12px 0 6px' }}>
-        <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--green)', color: '#fff', display: 'grid', placeItems: 'center', margin: '0 auto' }}>
+        <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--kelp)', color: '#fff', display: 'grid', placeItems: 'center', margin: '0 auto' }}>
           <Icon name="check" size={30} stroke={3} />
         </div>
         <h2 className="title">{notReady ? '아직 확인할 곳이 있어요' : `방문지 ${visits.length}곳 확정!`}</h2>
         <div className="small muted">
-          {Object.entries(counts).map(([k, n]) => `${k} ${n}`).join(' · ')}
+          {Object.entries(counts).map(([k, n]) => `${k} ${n}곳`).join(', ')}
         </div>
       </div>
       {groupByDay(visits).map((g) => (

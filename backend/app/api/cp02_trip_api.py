@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app import jobs
-from app.api.deps import device_token, get_db, token_from_query
+from app.api.deps import device_token, ensure_capacity, ensure_trip_quota, get_db, token_from_query
 from app.api.serializers import job_out, photo_out, trip_out
 from app.components import cp08_exif
 from app.components.cp15_repository import NotFound
@@ -41,6 +41,7 @@ def _trip(db: Session, trip_id: str, owner: str):
 
 @router.post("/trips", status_code=201)
 def create_trip(body: TripCreate, owner: str = Depends(device_token), db: Session = Depends(get_db)):
+    ensure_trip_quota(db, owner)
     return trip_out(repo.create_trip(db, owner, body.title.strip()[:100]))
 
 
@@ -120,6 +121,7 @@ def start_analysis(trip_id: str, body: AnalysisRequest, owner: str = Depends(dev
         raise HTTPException(409, "이미 분석한 여행이에요")
     if media_store.remaining_originals(t.id) == 0:
         raise HTTPException(409, "원본 사진이 남아 있지 않아요. 사진을 다시 올려 주세요")
+    ensure_capacity(db, owner)
     t.consent_at = datetime.now()
     t.status = "analyzing"
     job = Job(trip_id=t.id, kind="analysis", detail={})
