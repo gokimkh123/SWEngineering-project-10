@@ -236,8 +236,79 @@ class TestFactChecker:
     def test_time_tokens(self):
         assert fc.time_tokens("오후 8시 30분, 09:30") == {"20:30", "09:30"}
 
+    # 사진 기록(방문 시각·날짜)과 맞는 표현은 공식 데이터에 없어도 지우지 않는다
+    TRIP = fc.TripRecord.from_spans([(datetime(2026, 11, 21, 10, 12), datetime(2026, 11, 21, 10, 40)),
+                                     (datetime(2026, 11, 22, 15, 5), datetime(2026, 11, 22, 15, 5))])
+
+    def test_trip_time_not_checked_against_official_data(self):
+        for text in ("먼저 10시에 해운대해수욕장으로 향했다.", "오후 3시에는 해운대해수욕장을 다시 찾았다.",
+                     "2026년 11월 22일, 2일차에는 해운대해수욕장에 갔다.", "10:40까지 해운대해수욕장에 머물렀다."):
+            r = fc.check_generated_sentence(text, ["tour:1"], ["overview"], True, FACTS, CONFIRMED, KNOWN, trip=self.TRIP)
+            assert r.ok, (text, r.warnings)
+
+    def test_time_not_in_trip_still_checked(self):
+        r = fc.check_generated_sentence("오후 7시에 해운대해수욕장으로 향했다.", ["tour:1"], ["overview"], True, FACTS, CONFIRMED, KNOWN, trip=self.TRIP)
+        assert any(w.code == "number_mismatch" for w in r.warnings)
+        r = fc.check_generated_sentence("10시에 들른 해운대해수욕장 백사장은 3km다.", ["tour:1"], ["overview"], True, FACTS, CONFIRMED, KNOWN, trip=self.TRIP)
+        assert [w.message for w in r.warnings] == ["공식 데이터에 없는 수치가 있어요: 3"]
+
+    def test_edited_visit_time_is_not_opening_hours(self):
+        r = fc.check_edited_sentence("오후 3시에 해운대 블루라인파크 열차를 탔다.", FACTS, CONFIRMED, KNOWN, trip=self.TRIP)
+        assert r.ok
+
 
 # ---------------------------------------------------------------- CP-12 / CP-05
+class TestFactCheckerScriptAndTimeOfDay:
+    """D-07: 한자가 섞이거나 사진 기록의 방문 시각과 다른 시간대 표현은 생성 문장에서 뺀다."""
+    FACTS = {"tour:16": {"name": "오륙도 스카이워크", "overview": "해안 절벽 끝에 설치된 유리 바닥 전망대."},
+             "tour:8": {"name": "감천문화마을", "overview": "1950년대 피란민 정착지에서 시작된 산비탈 마을.", "usetime": "09:00~18:00"}}
+    KNOWN = {"오륙도 스카이워크": "tour:16", "감천문화마을": "tour:8"}
+    CONFIRMED = {"tour:16", "tour:8"}
+    TRIP = fc.TripRecord.from_visits([("tour:8", 1, datetime(2026, 11, 21, 10, 12), datetime(2026, 11, 21, 10, 12)),
+                                      ("tour:16", 1, datetime(2026, 11, 21, 15, 5), datetime(2026, 11, 21, 15, 5))])
+
+    def check(self, text, pids=(), fields=(), is_fact=False, day=1):
+        return fc.check_generated_sentence(text, list(pids), list(fields), is_fact, self.FACTS, self.CONFIRMED, self.KNOWN,
+                                           trip=self.TRIP, day=day)
+
+    def test_hanja_rejected(self):
+        """실제 녹화(11/25)에서 나온 문장: 한자 '午時' + 방문 시각(15:05)과 다른 시간."""
+        r = self.check("午時가 되면 해안 절벽 끝에 설치된 오륙도 스카이워크로 올라서 바다 전망을 감상했습니다.", ["tour:16"])
+        assert "foreign_script" in [w.code for w in r.warnings]
+
+    def test_time_of_day_mismatch_removed(self):
+        r = self.check("정오가 되자 오륙도 스카이워크에 올랐어요.", ["tour:16"])
+        assert [w.code for w in r.warnings] == ["time_of_day_mismatch"]
+        r = self.check("저녁에는 감천문화마을을 걸었어요.", [])  # 장소 ID 없이 이름만 나와도 그 장소 방문 시각과 대조
+        assert [w.code for w in r.warnings] == ["time_of_day_mismatch"]
+
+    def test_time_of_day_matches_visit(self):
+        assert self.check("아침에 감천문화마을에서 여행을 시작했어요.", ["tour:8"]).ok
+        assert self.check("오후에는 오륙도 스카이워크에 들렀어요.", ["tour:16"]).ok
+        assert self.check("점심 무렵 감천문화마을을 둘러봤어요.", ["tour:8"]).ok  # 10:12 → 앞뒤 1시간 허용
+
+    def test_opening_hours_sentence_not_time_of_day(self):
+        """운영시간 문장의 '아침'은 방문 시각이 아니므로 대조하지 않는다."""
+        r = self.check("감천문화마을 안내센터는 아침 09:00부터 18:00까지 운영해요.", ["tour:8"], ["usetime"], True)
+        assert r.ok
+
+    def test_sentence_without_place_uses_that_day(self):
+        assert not self.check("밤늦게 하루를 마무리했다.").ok      # 1일차 방문은 10:12·15:05 → 밤은 맞지 않음
+        assert self.check("오후에 하루를 정리했다.").ok
+
+    def test_template_time_phrases_always_pass(self):
+        """템플릿 문장(_time_phrase)이 쓰는 시간대 표현은 어떤 방문 시각에서도 지워지지 않는다."""
+        from app.adapters.cp19_ai_gateway import _time_phrase
+        for h in range(24):
+            trip = fc.TripRecord.from_visits([("tour:8", 1, datetime(2026, 11, 21, h, 0), datetime(2026, 11, 21, h, 0))])
+            r = fc.check_generated_sentence(f"{_time_phrase(h)}에는 감천문화마을에 들렀어요.", ["tour:8"], [], False,
+                                            self.FACTS, self.CONFIRMED, self.KNOWN, trip=trip, day=1)
+            assert r.ok, (h, r.warnings)
+
+    def test_chestnut_is_not_night(self):
+        assert fc.time_of_day_words("군밤을 먹었다") == [] or all(w != "밤" for w, _, _ in fc.time_of_day_words("밤을 줍는 체험"))
+
+
 class TestUntaggedAndRoute:
     T = datetime(2026, 10, 10)
     SPANS = [

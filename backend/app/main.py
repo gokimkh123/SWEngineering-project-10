@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -16,7 +17,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.adapters.cp18_place_data import SOURCE_LICENSES, SOURCE_NAMES, place_adapter
 from app.adapters.cp19_ai_gateway import ai_gateway
-from app import demo
+from app import demo, retention
 from app.api import cp02_trip_api, cp03_visit_api, cp04_story_api
 from app.api.deps import device_token
 from app.components.cp11_matcher import AUTO_THRESHOLD, CHECK_THRESHOLD
@@ -35,11 +36,14 @@ DEMO_DIR = demo.DEMO_DIR
 async def lifespan(_: FastAPI):
     init_db()
     media_store.cleanup_orphans()  # 비정상 종료로 남은 원본 정리 (QA-04)
+    retention.start()              # 15분마다: 분석 안 한 원본 사진 정리, 보관 기간이 지난 여행 삭제
+    threading.Thread(target=ai_gateway.warm_up, name="vlm-warmup", daemon=True).start()
     yield
 
 
+_docs = {} if not settings.public_mode else {"docs_url": None, "redoc_url": None, "openapi_url": None}  # 공개 서버는 API 문서를 숨김
 app = FastAPI(title="찰칵부산 API", version="0.1.0-prototype", lifespan=lifespan,
-              description="부산 여행 사진 → 방문지·동선·출처 있는 여행기 (Team 10 프로토타입)")
+              description="부산 여행 사진 → 방문지·동선·출처 있는 여행기 (Team 10 프로토타입)", **_docs)
 
 meta = APIRouter(tags=["Meta"])
 
@@ -62,6 +66,9 @@ def service_meta():
         "api_calls": {"ok": dict(place_adapter.stats.counts), "failed": dict(place_adapter.stats.failures)},
         "queue": "rq" if settings.redis_url else "in-process",
         "database": "postgresql" if settings.database_url.startswith("postgres") else "sqlite",
+        "public": settings.public_mode,
+        "demo_seed": settings.demo_seed,
+        "retention_days": settings.retention_days,
     }
 
 
@@ -75,7 +82,10 @@ def demo_photos():
 
 @meta.post("/demo/seed", status_code=201)
 def demo_seed(owner: str = Depends(device_token)):
-    """완성된 시연 여행 한 번에 만들기 (발표용). 실제 파이프라인을 돌리고 확인 단계만 AI 추천대로 처리한다."""
+    """완성된 시연 여행 한 번에 만들기 (발표용). 실제 파이프라인을 돌리고 확인 단계만 AI 추천대로 처리한다.
+    요청 하나 안에서 분석 전체를 돌리므로 공개 모드에서는 끈다(DEMO_SEED)."""
+    if not settings.demo_seed:
+        raise HTTPException(404, "이 서버에서는 쓸 수 없는 기능이에요")
     try:
         return demo.seed_demo_trip(owner)
     except FileNotFoundError as e:

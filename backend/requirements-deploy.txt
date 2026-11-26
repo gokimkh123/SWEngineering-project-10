@@ -1,0 +1,4 @@
+# 배포(docker compose) 전용: 작업 큐(Redis + RQ 워커) · PostgreSQL 드라이버 (설계서 2.5)
+rq>=2.4,<3
+redis>=5.0,<9
+psycopg[binary]>=3.2,<4

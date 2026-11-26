@@ -1,0 +1,71 @@
+{
+ "run_at": "2026-11-25T17:34:52",
+ "checks": [
+  {
+   "item": "API 문서·스키마 비공개",
+   "expected": "404",
+   "actual": "docs 404, openapi.json 404, redoc 404",
+   "pass": true
+  },
+  {
+   "item": "시연용 데이터 생성 주소 차단",
+   "expected": "404",
+   "actual": "404",
+   "pass": true
+  },
+  {
+   "item": "기기 토큰 없는 요청 거부",
+   "expected": "401",
+   "actual": "401",
+   "pass": true
+  },
+  {
+   "item": "경로 조작(../)으로 서버 파일 접근 불가",
+   "expected": "파일 내용 노출 없음 (앱 화면 또는 404)",
+   "actual": "200 text/html / 404 application/json · 파일 내용 노출 0건",
+   "pass": true
+  },
+  {
+   "item": "다른 기기의 여행 접근 차단",
+   "expected": "404",
+   "actual": "404",
+   "pass": true
+  },
+  {
+   "item": "이미지로 위장한 파일 거부",
+   "expected": "접수 0장",
+   "actual": "접수 0장 · 사유 '이미지 파일이 아니에요'",
+   "pass": true
+  },
+  {
+   "item": "요청당 45MB 초과 업로드 차단",
+   "expected": "413",
+   "actual": "413",
+   "pass": true
+  },
+  {
+   "item": "요청 폭주 제한 (IP당 초당 15회·순간 40회)",
+   "expected": "한도 초과분 429",
+   "actual": "동시 120회 요청 → 200 49회 · 429 71회",
+   "pass": true
+  },
+  {
+   "item": "보안 헤더 (CSP·HSTS·X-Frame-Options 등)",
+   "expected": "6종",
+   "actual": "6/6종 · X-Frame-Options DENY",
+   "pass": true
+  },
+  {
+   "item": "서버 버전 비노출",
+   "expected": "버전 숫자 없음",
+   "actual": "Server: cloudflare",
+   "pass": true
+  },
+  {
+   "item": "클라이언트 JS에 서버 키 없음",
+   "expected": "0건",
+   "actual": "번들 1개 검사 · 발견 0건",
+   "pass": true
+  }
+ ]
+}

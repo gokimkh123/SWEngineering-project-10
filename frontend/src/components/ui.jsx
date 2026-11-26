@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { thumbUrl } from '../api.js'
 
@@ -23,6 +23,10 @@ const I = {
   refresh: <path d="M20 11a8 8 0 0 0-14-5l-2 2M4 13a8 8 0 0 0 14 5l2-2M4 4v4h4M20 20v-4h-4" />,
   download: <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />,
   ext: <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />,
+  more: <path d="M12 6.5v.01M12 12v.01M12 17.5v.01" strokeWidth="3.2" />,
+  moon: <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />,
+  sun: <path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 1.5v2M12 20.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1.5 12h2M20.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />,
+  arrowLeft: <path d="M20 12H5M11 5l-7 7 7 7" />,
 }
 
 export function Icon({ name, size = 22, stroke = 2 }) {
@@ -50,19 +54,27 @@ export function TopBar({ title, back = true, close = false, right = null, onBack
   )
 }
 
-export function Tabs() {
-  const cls = ({ isActive }) => `tab${isActive ? ' active' : ''}`
+/** 일기장 상단 바: 이름 · 검색 · 밝기 바꾸기 · MY */
+export function AppBar({ query, onQuery, theme, onToggleTheme }) {
   return (
-    <nav className="tabs" aria-label="하단 탭">
-      <NavLink to="/" end className={cls}><Icon name="home" />홈</NavLink>
-      <NavLink to="/trips" className={cls}><Icon name="map" />내 여행</NavLink>
-      <NavLink to="/upload" className="tab" aria-label="새 여행기 업로드">
-        <span className="tab-fab"><Icon name="plus" stroke={2.4} /></span>
-      </NavLink>
-      <NavLink to="/stories" className={cls}><Icon name="pen" />여행기</NavLink>
-      <NavLink to="/my" className={cls}><Icon name="user" />MY</NavLink>
-    </nav>
+    <header className="appbar">
+      <NavLink to="/" className="brand">찰칵<b>부산</b></NavLink>
+      <label className="search-pill">
+        <Icon name="search" />
+        <input type="search" placeholder="검색" value={query} onChange={(e) => onQuery(e.target.value)} aria-label="여행기 검색" />
+      </label>
+      <div className="tools">
+        <button className="icon-btn" onClick={onToggleTheme} aria-label={theme === 'dark' ? '밝은 화면으로' : '어두운 화면으로'}>
+          <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
+        </button>
+        <NavLink to="/my" className="icon-btn" aria-label="MY"><Icon name="user" /></NavLink>
+      </div>
+    </header>
   )
+}
+
+export function Fab() {
+  return <NavLink to="/upload" className="fab" aria-label="새 여행기 만들기"><Icon name="plus" stroke={2.2} /></NavLink>
 }
 
 const STATUS_CHIP = {
@@ -85,7 +97,7 @@ export function TripStatusChip({ trip }) {
   return <span className="chip">사진 준비</span>
 }
 
-export function NumBadge({ n, color = '#F05C2C', size = 26 }) {
+export function NumBadge({ n, color = '#2196F3', size = 26 }) {
   return <span className="badge-num" style={{ background: color, width: size, height: size }}>{n}</span>
 }
 
@@ -120,6 +132,52 @@ export function ErrorBox({ error, onRetry }) {
     <div className="notice error" role="alert">
       {error.message || String(error)}
       {onRetry && <div><button className="link-btn" onClick={onRetry}><Icon name="refresh" size={16} />다시 시도</button></div>}
+    </div>
+  )
+}
+
+/** 큰 사진 + 반투명 날짜 띠 + 사진 위 아이콘 (일기장 본문 머리) */
+export function JHero({ photoId, date, sub, onBack, actions }) {
+  return (
+    <div className="j-hero">
+      <Photo id={photoId} className="j-hero-img" />
+      <div className="j-hero-actions">
+        {onBack && <button className="icon-btn" onClick={onBack} aria-label="뒤로"><Icon name="arrowLeft" /></button>}
+        <span className="spacer" />
+        {actions}
+      </div>
+      <div className="j-hero-caption">
+        <div className="j-hero-date">{date}</div>
+        {sub && <div className="j-hero-sub">{sub}</div>}
+      </div>
+    </div>
+  )
+}
+
+/** ⋮ 더보기 메뉴. items = [{label, icon, onClick, danger}] */
+export function MoreMenu({ items }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  useEffect(() => {
+    if (!open) return undefined
+    const close = (e) => { if (!ref.current?.contains(e.target)) setOpen(false) }
+    const esc = (e) => e.key === 'Escape' && setOpen(false)
+    document.addEventListener('pointerdown', close)
+    document.addEventListener('keydown', esc)
+    return () => { document.removeEventListener('pointerdown', close); document.removeEventListener('keydown', esc) }
+  }, [open])
+  return (
+    <div className="menu-wrap" ref={ref}>
+      <button className="icon-btn" aria-label="더 보기" aria-expanded={open} onClick={() => setOpen(!open)}><Icon name="more" /></button>
+      {open && (
+        <div className="menu" role="menu">
+          {items.map((it) => (
+            <button key={it.label} role="menuitem" className={it.danger ? 'danger' : ''} onClick={() => { setOpen(false); it.onClick() }}>
+              {it.icon && <Icon name={it.icon} size={18} />}{it.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

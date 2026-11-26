@@ -1,0 +1,46 @@
+%% 3.3 컴포넌트 의존관계 — 최종 구현 기준 (화살표 = 호출 방향)
+flowchart LR
+  subgraph PRES["Presentation"]
+    CP01["CP-01 Web Client"]
+  end
+  subgraph APP["Application · FastAPI"]
+    CP02["CP-02 Trip API"]
+    CP03["CP-03 Visit API"]
+    CP04["CP-04 Story API"]
+    CP06["CP-06 Share Card"]
+  end
+  Q[("Redis 작업 큐")]
+  subgraph ANA["Analysis · 워커"]
+    CP07["CP-07 Analysis Orchestrator"]
+    CP08["CP-08 EXIF Extractor"]
+    CP09["CP-09 Visit Clusterer"]
+    CP11["CP-11 Place Matcher"]
+    CP12["CP-12 Untagged Resolver"]
+    CP13["CP-13 Story Generator"]
+  end
+  subgraph DOM["Domain · 공용 모듈"]
+    CP05["CP-05 Route Service"]
+    CP10["CP-10 Candidate Finder"]
+    CP14["CP-14 Fact Checker"]
+  end
+  subgraph DATA["Data"]
+    CP15["CP-15 Trip Repository"]
+    CP16["CP-16 Place Cache"]
+    CP17["CP-17 Media Store"]
+  end
+  subgraph EXT["External"]
+    CP18["CP-18 Place Data Adapter"]
+    CP19["CP-19 AI Gateway"]
+  end
+  CP01 -->|IF-02~04| CP02 & CP03 & CP04
+  CP02 & CP04 -->|작업 등록| Q
+  Q --> CP07 & CP13
+  CP07 --> CP08 & CP09 & CP10 & CP11 & CP12
+  CP07 --> CP15 & CP17
+  CP11 & CP12 & CP13 --> CP19
+  CP13 --> CP14 & CP05 & CP16
+  CP03 --> CP05 & CP10 & CP15
+  CP04 --> CP06 & CP14 & CP15
+  CP06 --> CP17
+  CP10 --> CP16
+  CP16 --> CP18

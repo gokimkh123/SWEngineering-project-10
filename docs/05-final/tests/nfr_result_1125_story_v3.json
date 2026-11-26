@@ -1,0 +1,531 @@
+{
+ "photos": 20,
+ "phases": {
+  "nfr01": {
+   "runs": [
+    {
+     "upload_s": 0.03,
+     "analysis_s": 7.63,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "blog",
+     "story_s": 7.37,
+     "model": "qwen3.5:4b",
+     "sentences": 17,
+     "facts": 14,
+     "facts_with_note": 14,
+     "removed": 1,
+     "footnotes": 56,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 14,
+     "facts_llm_noted": 14,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": [
+      [
+       "근거 데이터가 없는 사실 문장이에요"
+      ]
+     ]
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 6.36,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "diary",
+     "story_s": 6.1,
+     "model": "qwen3.5:4b",
+     "sentences": 13,
+     "facts": 12,
+     "facts_with_note": 12,
+     "removed": 0,
+     "footnotes": 37,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 12,
+     "facts_llm_noted": 12,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": []
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 7.38,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "brief",
+     "story_s": 6.86,
+     "model": "qwen3.5:4b",
+     "sentences": 16,
+     "facts": 14,
+     "facts_with_note": 14,
+     "removed": 0,
+     "footnotes": 57,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 14,
+     "facts_llm_noted": 14,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": []
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 6.14,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "blog",
+     "story_s": 7.37,
+     "model": "qwen3.5:4b",
+     "sentences": 17,
+     "facts": 14,
+     "facts_with_note": 14,
+     "removed": 0,
+     "footnotes": 44,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 14,
+     "facts_llm_noted": 14,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": []
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 7.12,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "diary",
+     "story_s": 6.86,
+     "model": "qwen3.5:4b",
+     "sentences": 16,
+     "facts": 15,
+     "facts_with_note": 15,
+     "removed": 0,
+     "footnotes": 58,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 15,
+     "facts_llm_noted": 15,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": []
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 7.38,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "brief",
+     "story_s": 5.6,
+     "model": "qwen3.5:4b",
+     "sentences": 18,
+     "facts": 11,
+     "facts_with_note": 11,
+     "removed": 0,
+     "footnotes": 44,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 11,
+     "facts_llm_noted": 11,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": []
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 7.12,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "blog",
+     "story_s": 8.14,
+     "model": "qwen3.5:4b",
+     "sentences": 19,
+     "facts": 16,
+     "facts_with_note": 16,
+     "removed": 0,
+     "footnotes": 55,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 16,
+     "facts_llm_noted": 16,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": []
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 7.12,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "diary",
+     "story_s": 5.12,
+     "model": "qwen3.5:4b",
+     "sentences": 15,
+     "facts": 12,
+     "facts_with_note": 12,
+     "removed": 1,
+     "footnotes": 41,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 12,
+     "facts_llm_noted": 12,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": [
+      [
+       "한국어가 아닌 글자가 섞여 있어요: 午時"
+      ]
+     ]
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 7.37,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "brief",
+     "story_s": 7.62,
+     "model": "qwen3.5:4b",
+     "sentences": 19,
+     "facts": 14,
+     "facts_with_note": 14,
+     "removed": 0,
+     "footnotes": 56,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 14,
+     "facts_llm_noted": 14,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": []
+    },
+    {
+     "upload_s": 0.02,
+     "analysis_s": 7.38,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "blog",
+     "story_s": 6.63,
+     "model": "qwen3.5:4b",
+     "sentences": 17,
+     "facts": 14,
+     "facts_with_note": 14,
+     "removed": 0,
+     "footnotes": 50,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 14,
+     "facts_llm_noted": 14,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": []
+    }
+   ],
+   "analysis_avg": 7.1,
+   "analysis_max": 7.63,
+   "analysis_min": 6.14,
+   "story_avg": 6.77,
+   "story_max": 8.14
+  },
+  "concurrency": [
+   {
+    "n": 1,
+    "makespan_s": 7.47,
+    "per_job": [
+     7.38
+    ],
+    "avg_s": 7.38,
+    "max_s": 7.38,
+    "photos_per_min": 160.7,
+    "start": 1795596200.5790873,
+    "end": 1795596208.0466244
+   },
+   {
+    "n": 2,
+    "makespan_s": 13.62,
+    "per_job": [
+     7.41,
+     13.5
+    ],
+    "avg_s": 10.46,
+    "max_s": 13.5,
+    "photos_per_min": 176.2,
+    "start": 1795596211.0477407,
+    "end": 1795596224.666635
+   },
+   {
+    "n": 4,
+    "makespan_s": 27.76,
+    "per_job": [
+     7.42,
+     21.43,
+     27.56,
+     14.55
+    ],
+    "avg_s": 17.74,
+    "max_s": 27.56,
+    "photos_per_min": 172.9,
+    "start": 1795596227.6671119,
+    "end": 1795596255.4304616
+   }
+  ],
+  "api_load": [
+   {
+    "conc": 10,
+    "path": "/trips",
+    "requests": 1123,
+    "rps": 140.0,
+    "p50_ms": 70.6,
+    "p95_ms": 85.1,
+    "p99_ms": 92.6,
+    "errors": 0,
+    "error_rate": 0.0,
+    "start": 1795596258.4580157,
+    "end": 1795596266.4820375
+   },
+   {
+    "conc": 50,
+    "path": "/trips",
+    "requests": 1150,
+    "rps": 139.2,
+    "p50_ms": 349.9,
+    "p95_ms": 545.7,
+    "p99_ms": 706.0,
+    "errors": 0,
+    "error_rate": 0.0,
+    "start": 1795596268.4850998,
+    "end": 1795596276.7561212
+   },
+   {
+    "conc": 100,
+    "path": "/trips",
+    "requests": 1357,
+    "rps": 158.0,
+    "p50_ms": 698.6,
+    "p95_ms": 887.6,
+    "p99_ms": 1041.6,
+    "errors": 0,
+    "error_rate": 0.0,
+    "start": 1795596278.7577739,
+    "end": 1795596287.3569877
+   },
+   {
+    "conc": 10,
+    "path": "/meta",
+    "requests": 7955,
+    "rps": 994.2,
+    "p50_ms": 5.6,
+    "p95_ms": 24.8,
+    "p99_ms": 46.4,
+    "errors": 0,
+    "error_rate": 0.0,
+    "start": 1795596289.3572557,
+    "end": 1795596297.3646588
+   },
+   {
+    "conc": 50,
+    "path": "/meta",
+    "requests": 3736,
+    "rps": 464.5,
+    "p50_ms": 69.0,
+    "p95_ms": 348.4,
+    "p99_ms": 570.8,
+    "errors": 0,
+    "error_rate": 0.0,
+    "start": 1795596299.3653078,
+    "end": 1795596307.4143267
+   },
+   {
+    "conc": 100,
+    "path": "/meta",
+    "requests": 3245,
+    "rps": 400.4,
+    "p50_ms": 145.1,
+    "p95_ms": 1123.5,
+    "p99_ms": 2078.1,
+    "errors": 0,
+    "error_rate": 0.0,
+    "start": 1795596309.4145405,
+    "end": 1795596317.5248978
+   }
+  ]
+ },
+ "privacy": {
+  "photos": 20,
+  "originals_left": 0,
+  "coords_left": 0,
+  "gps_in_thumbs": 0,
+  "after_delete_rows": 0,
+  "after_delete_thumbs": 0
+ },
+ "resources": {
+  "nfr01": {
+   "gpu_util_avg": 57.2,
+   "gpu_util_max": 95.0,
+   "vram_max_mib": 5392.0,
+   "power_max_w": 191.75,
+   "samples": 279,
+   "api": {
+    "cpu_max": 19.84,
+    "cpu_avg": 3.3,
+    "mem_max_mib": 201
+   },
+   "worker": {
+    "cpu_max": 56.44,
+    "cpu_avg": 5.9,
+    "mem_max_mib": 162
+   },
+   "vlm": {
+    "cpu_max": 467.82,
+    "cpu_avg": 382.3,
+    "mem_max_mib": 9956
+   },
+   "postgres": {
+    "cpu_max": 4.79,
+    "cpu_avg": 1.5,
+    "mem_max_mib": 60
+   },
+   "redis": {
+    "cpu_max": 2.27,
+    "cpu_avg": 0.6,
+    "mem_max_mib": 11
+   },
+   "web": {
+    "cpu_max": 0.0,
+    "cpu_avg": 0.0,
+    "mem_max_mib": 18
+   }
+  },
+  "concurrency": {
+   "gpu_util_avg": 46.3,
+   "gpu_util_max": 91.0,
+   "vram_max_mib": 5397.0,
+   "power_max_w": 171.91,
+   "samples": 109,
+   "api": {
+    "cpu_max": 18.88,
+    "cpu_avg": 4.6,
+    "mem_max_mib": 196
+   },
+   "worker": {
+    "cpu_max": 49.84,
+    "cpu_avg": 7.8,
+    "mem_max_mib": 166
+   },
+   "vlm": {
+    "cpu_max": 449.4,
+    "cpu_avg": 322.4,
+    "mem_max_mib": 9949
+   },
+   "postgres": {
+    "cpu_max": 3.73,
+    "cpu_avg": 1.8,
+    "mem_max_mib": 60
+   },
+   "redis": {
+    "cpu_max": 2.06,
+    "cpu_avg": 0.6,
+    "mem_max_mib": 11
+   },
+   "web": {
+    "cpu_max": 1.66,
+    "cpu_avg": 0.3,
+    "mem_max_mib": 18
+   }
+  },
+  "api_load": {
+   "gpu_util_avg": 1.7,
+   "gpu_util_max": 8.0,
+   "vram_max_mib": 5496.0,
+   "power_max_w": 36.06,
+   "samples": 118,
+   "api": {
+    "cpu_max": 154.07,
+    "cpu_avg": 66.6,
+    "mem_max_mib": 211
+   },
+   "worker": {
+    "cpu_max": 0.04,
+    "cpu_avg": 0.0,
+    "mem_max_mib": 154
+   },
+   "vlm": {
+    "cpu_max": 17.8,
+    "cpu_avg": 3.4,
+    "mem_max_mib": 9943
+   },
+   "postgres": {
+    "cpu_max": 33.97,
+    "cpu_avg": 11.5,
+    "mem_max_mib": 77
+   },
+   "redis": {
+    "cpu_max": 2.1,
+    "cpu_avg": 0.6,
+    "mem_max_mib": 11
+   },
+   "web": {
+    "cpu_max": 1.61,
+    "cpu_avg": 0.3,
+    "mem_max_mib": 18
+   }
+  }
+ },
+ "measured": {
+  "date": "2026-11-25",
+  "where": "일회용 worker 컨테이너(chalkak-nfr)에서 api:8000 직접 호출",
+  "build": "D-04·D-05·D-06·D-07 수정 배포 후",
+  "gpu_before": "사용률 4%, 메모리 5391MiB (다른 GPU 작업 없음)"
+ }
+}

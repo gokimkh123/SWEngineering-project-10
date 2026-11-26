@@ -1,0 +1,29 @@
+%% 4.3 시퀀스 다이어그램 ① 사진 분석 (UC-01, UC-02, UC-03) — 최종 구현 기준
+sequenceDiagram
+autonumber
+actor U as 여행자
+participant W as Web Client
+participant A as Trip API
+participant Q as 작업 큐(Redis)
+participant O as Orchestrator
+participant M as Place Matcher
+participant G as AI Gateway<br/>(Ollama Qwen3.5)
+U->>W: 사진 선택 · AI 분석 동의
+W->>W: 큰 사진 축소 (EXIF 유지)
+W->>A: POST /trips/{id}/photos (6장·40MB 단위)
+W->>A: POST /trips/{id}/analysis
+A->>Q: 작업 등록 (동시 작업·일일 한도 확인)
+A-->>W: job_id
+loop 2초마다
+  W->>A: GET /jobs/{job_id}
+  A-->>W: 단계 · 진행률 · 방문지 미리보기
+end
+Q->>O: run(job_id)
+O->>O: EXIF 추출 → DBSCAN 방문지 묶기 → 300m 후보 조회
+par 방문지별 동시 처리
+  O->>M: ask(대표 사진, 후보 목록)
+  M->>G: vlm_match()
+  G-->>M: {place_id, confidence, reason}
+  M->>M: 후보 밖 답 거부 → 확신도 분기 (0.8 / 0.5)
+end
+O->>O: 위치 없는 사진 추천 → 원본 사진 · 좌표 삭제

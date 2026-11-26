@@ -45,6 +45,15 @@ def photo_out(p: Photo) -> dict:
             "suggest_reason": p.suggest_reason, "assign_state": p.assign_state, "thumb_ready": p.thumb_ready}
 
 
+def story_brief(s) -> dict:
+    """여행 목록(일기장 화면)용 여행기 요약: 제목 · 앞부분 글 · 들른 곳 이름."""
+    excerpt = ""
+    if s.status == "ready" and s.body:
+        excerpt = " ".join(x["text"] for p in s.body for x in p.get("sentences", []))[:160]
+    places = [st["name"] for d in (s.route_summary or []) for st in d.get("stops", []) if st.get("name")]
+    return {"id": s.id, "title": s.title, "status": s.status, "style": s.style, "excerpt": excerpt, "places": places}
+
+
 def trip_out(t: Trip, latest_jobs: dict[str, Job | None] | None = None) -> dict:
     visits = t.visits
     counts = {s.value: 0 for s in VisitStatus}
@@ -57,7 +66,8 @@ def trip_out(t: Trip, latest_jobs: dict[str, Job | None] | None = None) -> dict:
         "needs_user": counts[VisitStatus.NEEDS_CHECK.value] + counts[VisitStatus.NEEDS_SELECTION.value],
         "pending_photos": sum(1 for p in t.photos if p.assign_state == "pending"),
         "cover_photo_id": cover, "consented": t.consent_at is not None, "created_at": t.created_at.isoformat(),
-        "stories": [{"id": s.id, "title": s.title, "status": s.status, "style": s.style} for s in t.stories],
+        "stories": [story_brief(s) for s in t.stories],
+        "first_time": min(v.start_at for v in visits).strftime("%H:%M") if visits else None,
     }
     if latest_jobs is not None:
         out["jobs"] = {k: (job_out(j) if j else None) for k, j in latest_jobs.items()}

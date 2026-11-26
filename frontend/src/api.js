@@ -89,3 +89,11 @@ export function fmtDate(iso) {
   const d = new Date(`${iso}T00:00:00`)
   return `${d.getMonth() + 1}.${d.getDate()} (${WEEKDAYS[d.getDay()]})`
 }
+
+const WEEKDAY_FULL = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
+/** '2026-11-22' → '2026년 11월 22일 일요일' */
+export function fmtLongDate(iso) {
+  if (!iso) return ''
+  const d = new Date(`${iso}T00:00:00`)
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${WEEKDAY_FULL[d.getDay()]}`
+}

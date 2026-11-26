@@ -1,0 +1,32 @@
+%% 2.5 배포 구조 (최종) — docker-compose.yml 기준
+flowchart LR
+  subgraph USER["사용자 기기"]
+    PC["PC 브라우저"]
+    MO["휴대폰 브라우저"]
+  end
+  CF["Cloudflare 엣지<br/>Quick Tunnel · HTTPS"]
+  subgraph HOST["서버 PC (Docker Compose)"]
+    subgraph EDGE["edge 망"]
+      T["tunnel<br/>cloudflared"]
+    end
+    WEB["web · nginx<br/>React 정적 파일 · 리버스 프록시<br/>요청 제한 · 보안 헤더"]
+    subgraph APP["내부 망 app · data · ai"]
+      API["api · FastAPI"]
+      WK["worker · RQ<br/>분석 · 여행기 작업"]
+      R[("redis<br/>작업 큐")]
+      PG[("postgres 17<br/>여행 · 방문지 · 여행기")]
+      V["vlm · Ollama<br/>qwen3.5:4b (GPU)"]
+    end
+  end
+  OSM["OpenStreetMap 지도 타일"]
+  PC -- HTTPS --> CF
+  MO -- HTTPS --> CF
+  T -- "바깥으로 연결한 터널<br/>(포트 개방 없음)" --> CF
+  T --> WEB --> API
+  API --> R --> WK
+  API --> PG
+  WK --> PG
+  API --> V
+  WK --> V
+  PC -.-> OSM
+  MO -.-> OSM
