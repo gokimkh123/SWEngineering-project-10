@@ -1,0 +1,31 @@
+%% 4.4 시퀀스 다이어그램 ② 여행기 생성·사실 대조 (UC-06, UC-09) — 최종 구현 기준 (11/25 D-04·D-07 수정 반영)
+sequenceDiagram
+autonumber
+actor U as 여행자
+participant W as Web Client
+participant A as Story API
+participant S as Story Generator
+participant G as AI Gateway<br/>(Ollama Qwen3.5)
+participant C as Fact Checker
+U->>W: 문체 선택 (블로그 · 일기 · 간결)
+W->>A: POST /trips/{id}/stories
+A-->>W: story_id, job_id
+A->>S: 작업 큐 경유 generate(story)
+S->>S: 확정 방문지 + 공식 데이터로 입력 구성 (날짜별, 5곳 단위)
+par 부분마다 (동시 2개)
+  S->>G: llm_story_part(하루 방문지 최대 5곳, 프롬프트 story_v3)
+  G-->>S: 문장 목록 (장소 ID · 근거 필드 · 사실 여부)
+end
+opt 응답 잘림(done_reason=length) · 형식 오류인 날
+  S->>G: template_paragraph(그날 방문지)
+  G-->>S: 공식 데이터 문장으로 만든 그날 문단
+end
+loop 문장마다
+  S->>C: check_generated_sentence(문장, 공식 데이터, 사진 기록)
+  C-->>S: 통과 또는 경고 (수치 불일치 · 근거 없음 · 미확정 장소 · 한자 · 방문 시각과 다른 시간대)
+end
+S->>S: 경고 문장 제거 → 각주 번호 부여 → 문단별 작성 방식 표시 (LLM · 템플릿)
+S->>G: llm_title(장소 이름 · 날짜 수)
+S->>S: DB 저장 (모델 · 프롬프트 버전 기록)
+W->>A: GET /stories/{id} (작업 완료 후)
+A-->>W: 본문 + 각주 (출처 · 갱신일) + 작성 방식 문구

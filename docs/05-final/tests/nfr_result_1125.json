@@ -1,0 +1,536 @@
+{
+ "photos": 20,
+ "phases": {
+  "nfr01": {
+   "runs": [
+    {
+     "upload_s": 0.03,
+     "analysis_s": 7.89,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "blog",
+     "story_s": 9.16,
+     "model": "qwen3.5:4b",
+     "sentences": 24,
+     "facts": 15,
+     "facts_with_note": 15,
+     "removed": 0,
+     "footnotes": 50,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 15,
+     "facts_llm_noted": 15,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": []
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 7.37,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "diary",
+     "story_s": 12.44,
+     "model": "qwen3.5:4b",
+     "sentences": 31,
+     "facts": 19,
+     "facts_with_note": 19,
+     "removed": 0,
+     "footnotes": 40,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 19,
+     "facts_llm_noted": 19,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": []
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 7.13,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "brief",
+     "story_s": 9.88,
+     "model": "qwen3.5:4b",
+     "sentences": 28,
+     "facts": 15,
+     "facts_with_note": 15,
+     "removed": 1,
+     "footnotes": 40,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 15,
+     "facts_llm_noted": 15,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": [
+      [
+       "근거 데이터가 없는 사실 문장이에요"
+      ]
+     ]
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 7.12,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "blog",
+     "story_s": 10.15,
+     "model": "qwen3.5:4b",
+     "sentences": 26,
+     "facts": 15,
+     "facts_with_note": 15,
+     "removed": 0,
+     "footnotes": 49,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 15,
+     "facts_llm_noted": 15,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": []
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 6.12,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "diary",
+     "story_s": 10.16,
+     "model": "qwen3.5:4b",
+     "sentences": 27,
+     "facts": 15,
+     "facts_with_note": 15,
+     "removed": 0,
+     "footnotes": 25,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 15,
+     "facts_llm_noted": 15,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": []
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 7.13,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "brief",
+     "story_s": 9.65,
+     "model": "qwen3.5:4b",
+     "sentences": 27,
+     "facts": 19,
+     "facts_with_note": 19,
+     "removed": 1,
+     "footnotes": 45,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 19,
+     "facts_llm_noted": 19,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": [
+      [
+       "근거 데이터가 없는 사실 문장이에요"
+      ]
+     ]
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 7.38,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "blog",
+     "story_s": 8.64,
+     "model": "qwen3.5:4b",
+     "sentences": 22,
+     "facts": 14,
+     "facts_with_note": 14,
+     "removed": 0,
+     "footnotes": 42,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 14,
+     "facts_llm_noted": 14,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": []
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 7.37,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "diary",
+     "story_s": 7.63,
+     "model": "qwen3.5:4b",
+     "sentences": 22,
+     "facts": 14,
+     "facts_with_note": 14,
+     "removed": 1,
+     "footnotes": 31,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 14,
+     "facts_llm_noted": 14,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": [
+      [
+       "한국어가 아닌 글자가 섞여 있어요: 午時"
+      ]
+     ]
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 7.63,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "brief",
+     "story_s": 10.68,
+     "model": "qwen3.5:4b",
+     "sentences": 24,
+     "facts": 15,
+     "facts_with_note": 15,
+     "removed": 0,
+     "footnotes": 44,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 15,
+     "facts_llm_noted": 15,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": []
+    },
+    {
+     "upload_s": 0.03,
+     "analysis_s": 6.37,
+     "status": "ready",
+     "visits": 14,
+     "auto": 11,
+     "needs_user": 3,
+     "untagged": 1,
+     "accepted": 20,
+     "style": "blog",
+     "story_s": 12.19,
+     "model": "qwen3.5:4b",
+     "sentences": 32,
+     "facts": 21,
+     "facts_with_note": 21,
+     "removed": 0,
+     "footnotes": 54,
+     "paragraphs": 2,
+     "llm_paragraphs": 2,
+     "template_paragraphs": 0,
+     "facts_llm": 21,
+     "facts_llm_noted": 21,
+     "facts_template": 0,
+     "facts_template_noted": 0,
+     "removed_reasons": []
+    }
+   ],
+   "analysis_avg": 7.15,
+   "analysis_max": 7.89,
+   "analysis_min": 6.12,
+   "story_avg": 10.06,
+   "story_max": 12.44
+  },
+  "concurrency": [
+   {
+    "n": 1,
+    "makespan_s": 7.21,
+    "per_job": [
+     7.12
+    ],
+    "avg_s": 7.12,
+    "max_s": 7.12,
+    "photos_per_min": 166.4,
+    "start": 1795597252.322672,
+    "end": 1795597259.5348892
+   },
+   {
+    "n": 2,
+    "makespan_s": 13.61,
+    "per_job": [
+     6.36,
+     13.48
+    ],
+    "avg_s": 9.92,
+    "max_s": 13.48,
+    "photos_per_min": 176.4,
+    "start": 1795597262.5352316,
+    "end": 1795597276.1417744
+   },
+   {
+    "n": 4,
+    "makespan_s": 28.15,
+    "per_job": [
+     27.95,
+     7.39,
+     20.83,
+     14.5
+    ],
+    "avg_s": 17.67,
+    "max_s": 27.95,
+    "photos_per_min": 170.5,
+    "start": 1795597279.142755,
+    "end": 1795597307.2908359
+   }
+  ],
+  "api_load": [
+   {
+    "conc": 10,
+    "path": "/trips",
+    "requests": 1152,
+    "rps": 143.6,
+    "p50_ms": 69.0,
+    "p95_ms": 81.9,
+    "p99_ms": 88.2,
+    "errors": 0,
+    "error_rate": 0.0,
+    "start": 1795597310.3190134,
+    "end": 1795597318.3472772
+   },
+   {
+    "conc": 50,
+    "path": "/trips",
+    "requests": 1308,
+    "rps": 158.2,
+    "p50_ms": 344.7,
+    "p95_ms": 528.4,
+    "p99_ms": 689.7,
+    "errors": 0,
+    "error_rate": 0.0,
+    "start": 1795597320.348702,
+    "end": 1795597328.6212218
+   },
+   {
+    "conc": 100,
+    "path": "/trips",
+    "requests": 1211,
+    "rps": 140.9,
+    "p50_ms": 696.7,
+    "p95_ms": 893.2,
+    "p99_ms": 1056.8,
+    "errors": 0,
+    "error_rate": 0.0,
+    "start": 1795597330.6228888,
+    "end": 1795597339.2272143
+   },
+   {
+    "conc": 10,
+    "path": "/meta",
+    "requests": 7997,
+    "rps": 999.3,
+    "p50_ms": 5.7,
+    "p95_ms": 19.3,
+    "p99_ms": 50.0,
+    "errors": 0,
+    "error_rate": 0.0,
+    "start": 1795597341.2288723,
+    "end": 1795597349.2373447
+   },
+   {
+    "conc": 50,
+    "path": "/meta",
+    "requests": 4442,
+    "rps": 552.2,
+    "p50_ms": 66.9,
+    "p95_ms": 312.6,
+    "p99_ms": 539.0,
+    "errors": 0,
+    "error_rate": 0.0,
+    "start": 1795597351.2473054,
+    "end": 1795597359.298729
+   },
+   {
+    "conc": 100,
+    "path": "/meta",
+    "requests": 2583,
+    "rps": 318.5,
+    "p50_ms": 155.0,
+    "p95_ms": 1192.7,
+    "p99_ms": 2476.6,
+    "errors": 0,
+    "error_rate": 0.0,
+    "start": 1795597361.3066401,
+    "end": 1795597369.4219968
+   }
+  ]
+ },
+ "privacy": {
+  "photos": 20,
+  "originals_left": 0,
+  "coords_left": 0,
+  "gps_in_thumbs": 0,
+  "after_delete_rows": 0,
+  "after_delete_thumbs": 0
+ },
+ "resources": {
+  "nfr01": {
+   "gpu_util_avg": 59.0,
+   "gpu_util_max": 83.0,
+   "vram_max_mib": 5487.0,
+   "power_max_w": 200.73,
+   "samples": 346,
+   "api": {
+    "cpu_max": 22.11,
+    "cpu_avg": 3.6,
+    "mem_max_mib": 179
+   },
+   "worker": {
+    "cpu_max": 57.01,
+    "cpu_avg": 4.7,
+    "mem_max_mib": 156
+   },
+   "vlm": {
+    "cpu_max": 464.12,
+    "cpu_avg": 391.7,
+    "mem_max_mib": 11336
+   },
+   "postgres": {
+    "cpu_max": 5.34,
+    "cpu_avg": 1.4,
+    "mem_max_mib": 60
+   },
+   "redis": {
+    "cpu_max": 2.24,
+    "cpu_avg": 0.6,
+    "mem_max_mib": 11
+   },
+   "web": {
+    "cpu_max": 1.62,
+    "cpu_avg": 0.1,
+    "mem_max_mib": 18
+   }
+  },
+  "concurrency": {
+   "gpu_util_avg": 44.1,
+   "gpu_util_max": 81.0,
+   "vram_max_mib": 5487.0,
+   "power_max_w": 177.87,
+   "samples": 110,
+   "api": {
+    "cpu_max": 9.03,
+    "cpu_avg": 2.7,
+    "mem_max_mib": 196
+   },
+   "worker": {
+    "cpu_max": 42.69,
+    "cpu_avg": 6.4,
+    "mem_max_mib": 166
+   },
+   "vlm": {
+    "cpu_max": 472.65,
+    "cpu_avg": 329.9,
+    "mem_max_mib": 10977
+   },
+   "postgres": {
+    "cpu_max": 5.24,
+    "cpu_avg": 1.8,
+    "mem_max_mib": 60
+   },
+   "redis": {
+    "cpu_max": 2.11,
+    "cpu_avg": 0.6,
+    "mem_max_mib": 11
+   },
+   "web": {
+    "cpu_max": 1.79,
+    "cpu_avg": 0.3,
+    "mem_max_mib": 18
+   }
+  },
+  "api_load": {
+   "gpu_util_avg": 0.8,
+   "gpu_util_max": 2.0,
+   "vram_max_mib": 5488.0,
+   "power_max_w": 23.36,
+   "samples": 117,
+   "api": {
+    "cpu_max": 137.69,
+    "cpu_avg": 66.7,
+    "mem_max_mib": 198
+   },
+   "worker": {
+    "cpu_max": 0.01,
+    "cpu_avg": 0.0,
+    "mem_max_mib": 153
+   },
+   "vlm": {
+    "cpu_max": 0.84,
+    "cpu_avg": 0.1,
+    "mem_max_mib": 10977
+   },
+   "postgres": {
+    "cpu_max": 34.04,
+    "cpu_avg": 11.6,
+    "mem_max_mib": 79
+   },
+   "redis": {
+    "cpu_max": 2.06,
+    "cpu_avg": 0.6,
+    "mem_max_mib": 11
+   },
+   "web": {
+    "cpu_max": 1.5,
+    "cpu_avg": 0.1,
+    "mem_max_mib": 18
+   }
+  }
+ },
+ "measured": {
+  "date": "2026-11-25",
+  "where": "일회용 worker 컨테이너(chalkak-nfr)에서 api:8000 직접 호출",
+  "prompt": "story_v4",
+  "build": "D-04·D-05·D-06·D-07 수정 배포 후",
+  "gpu_before": "1 %, 5487 MiB (다른 GPU 작업 없음)"
+ }
+}

@@ -1,0 +1,75 @@
+%% 4.2 도메인 모델 클래스 다이어그램 (backend/app/models.py, 요구사항분석서 DR-01~06, DR-09)
+classDiagram
+direction LR
+class Trip {
+  +id: str
+  +owner_token: str
+  +title: str
+  +status: draft·analyzing·review·ready
+  +start_date, end_date
+  +consent_at: datetime
+}
+class Visit {
+  +order: int
+  +day: int
+  +start_at, end_at
+  +center_lat, center_lng
+  +status: VisitStatus
+  +place_id, confidence, ai_reason
+}
+class Photo {
+  +taken_at: datetime
+  +has_gps: bool
+  +lat, lng: 분석 후 삭제
+  +assign_state
+  +suggested_visit_id
+}
+class Place {
+  +id: "tour:900108"
+  +source: tour·busan·kakao
+  +name, address, overview
+  +updated_at: 제공처 갱신일
+}
+class Story {
+  +style: blog·diary·brief
+  +title
+  +body: 문단·문장 JSON
+  +route_summary
+  +model, prompt_version
+}
+class Footnote {
+  +num: int
+  +place_id
+  +field: overview·address·usetime
+  +source_name, updated_at
+}
+class MatchLog {
+  +event: ai·user
+  +ai_place_id, confidence
+  +user_place_id
+  +prompt_version
+}
+class Job {
+  +kind: analysis·story
+  +status, stage
+  +progress: float
+}
+class VisitStatus {
+  <<enumeration>>
+  분석중
+  자동확정
+  확인필요
+  선택필요
+  확정
+  기타장소
+}
+Trip "1" *-- "0..*" Visit
+Trip "1" *-- "0..*" Photo
+Trip "1" *-- "0..*" Story
+Trip "1" *-- "0..*" Job
+Visit "0..1" o-- "0..*" Photo
+Visit "1" *-- "0..*" MatchLog
+Story "1" *-- "0..*" Footnote
+Visit "0..*" --> "0..1" Place : 확정 장소
+Footnote "0..*" --> "1" Place : 출처
+Visit ..> VisitStatus

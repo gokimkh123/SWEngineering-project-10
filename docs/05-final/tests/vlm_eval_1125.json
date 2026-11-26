@@ -1,0 +1,520 @@
+{
+ "run_at": "2026-11-25T09:03:46",
+ "set": "웹 공개 사진(위키미디어 공용, CC0·CC BY·CC BY-SA) 27장 · 팀 촬영 평가셋(명세서 NFR-02)을 대신하는 평가 · 사진은 저장소에 넣지 않음",
+ "gps_noise": "샘플 장소 좌표에서 임의 방향 0~100m (균등 분포, 시드 1125)",
+ "vlm_model": "qwen3.5:4b",
+ "prompt": "vlm_match_v1",
+ "n": 27,
+ "correct": 22,
+ "included": 27,
+ "confident_wrong": 1,
+ "auto": 23,
+ "auto_correct": 22,
+ "statuses": {
+  "자동확정": 23,
+  "선택필요": 4
+ },
+ "elapsed_s": 17.3,
+ "rows": [
+  {
+   "file": "01_tour_900101.jpg",
+   "truth": "해운대해수욕장",
+   "truth_id": "tour:900101",
+   "offset_m": 15.1,
+   "radius_m": 300,
+   "candidates": [
+    "해운대해수욕장",
+    "SEA LIFE 부산아쿠아리움",
+    "해운대 OO횟집"
+   ],
+   "answer": "해운대해수욕장",
+   "confidence": 0.9,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진에는 해운대해수욕장의 특징적인 붉은색과 흰색 우산들이 해변에 줄지어 놓여 있고, 배경으로는 부산의 고층 빌딩들이 바다를 바라보며 서 있는 모습이 보입니다.",
+   "vlm_s": 0.95
+  },
+  {
+   "file": "02_tour_900102.jpg",
+   "truth": "광안리해수욕장",
+   "truth_id": "tour:900102",
+   "offset_m": 92.7,
+   "radius_m": 300,
+   "candidates": [
+    "광안리 OO카페",
+    "광안리해수욕장"
+   ],
+   "answer": "광안리해수욕장",
+   "confidence": 0.95,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진에 광안대교가 정면으로 보이는 해수욕장의 풍경과 파도, 노을빛 바다의 특징이 일치합니다.",
+   "vlm_s": 0.63
+  },
+  {
+   "file": "03_tour_900103.jpg",
+   "truth": "해운대 블루라인파크",
+   "truth_id": "tour:900103",
+   "offset_m": 43.4,
+   "radius_m": 300,
+   "candidates": [
+    "해운대 블루라인파크",
+    "미포 OO카페"
+   ],
+   "answer": "해운대 블루라인파크",
+   "confidence": 0.9,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진에는 해안선을 따라 달리는 스카이캡슐이 보이며, 배경은 바다와 도시 풍경을 보여 해운대 블루라인파크의 전형적인 모습과 일치합니다.",
+   "vlm_s": 0.69
+  },
+  {
+   "file": "04_tour_900104.jpg",
+   "truth": "동백섬",
+   "truth_id": "tour:900104",
+   "offset_m": 22.2,
+   "radius_m": 300,
+   "candidates": [
+    "동백섬"
+   ],
+   "answer": "없음",
+   "confidence": 0.0,
+   "status": "선택필요",
+   "correct": false,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진에는 해안선과 바위 절벽이 보이지만 동백섬의 특징인 동백나무 숲이나 등대, 누리마루 APEC하우스는 보이지 않습니다.",
+   "vlm_s": 0.63
+  },
+  {
+   "file": "05_tour_900105.jpg",
+   "truth": "SEA LIFE 부산아쿠아리움",
+   "truth_id": "tour:900105",
+   "offset_m": 85.2,
+   "radius_m": 300,
+   "candidates": [
+    "해운대해수욕장",
+    "SEA LIFE 부산아쿠아리움",
+    "해운대 OO횟집"
+   ],
+   "answer": "SEA LIFE 부산아쿠아리움",
+   "confidence": 0.9,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진 속 대형 수족관 유리창과 내부의 물고기들이 SEA LIFE 부산아쿠아리움의 특징을 보여줍니다.",
+   "vlm_s": 0.58
+  },
+  {
+   "file": "06_tour_900108.jpg",
+   "truth": "감천문화마을",
+   "truth_id": "tour:900108",
+   "offset_m": 32.8,
+   "radius_m": 300,
+   "candidates": [
+    "감천문화마을",
+    "감천 OO카페"
+   ],
+   "answer": "감천문화마을",
+   "confidence": 0.95,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "산비탈에 계단식으로 알록달록한 집들이 밀집해 있는 풍경이 감천문화마을의 특징과 일치합니다.",
+   "vlm_s": 0.6
+  },
+  {
+   "file": "07_tour_900109.jpg",
+   "truth": "자갈치시장",
+   "truth_id": "tour:900109",
+   "offset_m": 33.7,
+   "radius_m": 300,
+   "candidates": [
+    "자갈치시장"
+   ],
+   "answer": "자갈치시장",
+   "confidence": 0.85,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진에는 활어와 생선 등 수산물이 진열된 시장 내부 모습이 보이며, 자갈치시장의 특징인 활어와 건어물 가게가 늘어서 있는 모습과 일치합니다.",
+   "vlm_s": -0.29
+  },
+  {
+   "file": "08_tour_900110.jpg",
+   "truth": "BIFF광장",
+   "truth_id": "tour:900110",
+   "offset_m": 99.3,
+   "radius_m": 300,
+   "candidates": [
+    "BIFF광장",
+    "국제시장"
+   ],
+   "answer": "BIFF광장",
+   "confidence": 0.95,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진에는 부산국제영화제(BIFF)의 대형 아치 문과 길거리 음식 판매 장터가 보이며, 이는 BIFF광장의 특징적인 모습입니다.",
+   "vlm_s": 0.64
+  },
+  {
+   "file": "09_tour_900111.jpg",
+   "truth": "국제시장",
+   "truth_id": "tour:900111",
+   "offset_m": 72.0,
+   "radius_m": 300,
+   "candidates": [
+    "국제시장",
+    "BIFF광장"
+   ],
+   "answer": "국제시장",
+   "confidence": 0.9,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진에는 'GUKJE MARKET' 표지판이 보이며, 좁은 골목에 다양한 상점들이 밀집해 있어 국제시장의 특징과 일치합니다.",
+   "vlm_s": 0.64
+  },
+  {
+   "file": "10_tour_900112.jpg",
+   "truth": "용두산공원",
+   "truth_id": "tour:900112",
+   "offset_m": 0.5,
+   "radius_m": 300,
+   "candidates": [
+    "용두산공원"
+   ],
+   "answer": "용두산공원",
+   "confidence": 0.95,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진에는 용두산공원의 입문석과 배경에 있는 부산타워가 명확히 보이며, 주변 정원과 전통 건축물이 공원 내부를 나타냅니다.",
+   "vlm_s": 0.64
+  },
+  {
+   "file": "11_tour_900113.jpg",
+   "truth": "흰여울문화마을",
+   "truth_id": "tour:900113",
+   "offset_m": 5.9,
+   "radius_m": 300,
+   "candidates": [
+    "흰여울문화마을"
+   ],
+   "answer": "없음",
+   "confidence": 0.0,
+   "status": "선택필요",
+   "correct": false,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진의 건물 색상과 배치, 그리고 해안선 풍경이 흰여울문화마을의 특징과 일치하지 않습니다.",
+   "vlm_s": 0.51
+  },
+  {
+   "file": "12_tour_900114.jpg",
+   "truth": "태종대",
+   "truth_id": "tour:900114",
+   "offset_m": 32.9,
+   "radius_m": 300,
+   "candidates": [
+    "태종대"
+   ],
+   "answer": "태종대",
+   "confidence": 0.85,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "해안 절벽 위와 멀리 보이는 바닷가 풍경이 태종대의 특징과 일치합니다.",
+   "vlm_s": 0.6
+  },
+  {
+   "file": "13_tour_900115.jpg",
+   "truth": "해동용궁사",
+   "truth_id": "tour:900115",
+   "offset_m": 84.9,
+   "radius_m": 300,
+   "candidates": [
+    "해동용궁사"
+   ],
+   "answer": "해동용궁사",
+   "confidence": 0.9,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "바다와 바위 위에 지어진 전통적인 한국식 사찰 건물과 연결된 다리가 사진에 명확히 보입니다.",
+   "vlm_s": 0.6
+  },
+  {
+   "file": "14_tour_900116.jpg",
+   "truth": "오륙도 스카이워크",
+   "truth_id": "tour:900116",
+   "offset_m": 87.9,
+   "radius_m": 300,
+   "candidates": [
+    "오륙도 스카이워크"
+   ],
+   "answer": "오륙도 스카이워크",
+   "confidence": 0.9,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진에 보이는 해안 절벽과 멀리 있는 바위섬이 오륙도 스카이워크의 전형적인 풍경과 일치하며, 유리 바닥 전망대의 구조가 사진 왼쪽 하단에 명확히 확인된다.",
+   "vlm_s": 0.69
+  },
+  {
+   "file": "15_tour_900117.jpg",
+   "truth": "송정해수욕장",
+   "truth_id": "tour:900117",
+   "offset_m": 72.9,
+   "radius_m": 300,
+   "candidates": [
+    "송정해수욕장"
+   ],
+   "answer": "송정해수욕장",
+   "confidence": 0.85,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진에는 넓은 모래사장, 파도, 해변가 도로 및 철도가 보이며 송정해수욕장의 전형적인 풍경과 일치합니다.",
+   "vlm_s": 0.61
+  },
+  {
+   "file": "16_tour_900118.jpg",
+   "truth": "영화의전당",
+   "truth_id": "tour:900118",
+   "offset_m": 30.3,
+   "radius_m": 300,
+   "candidates": [
+    "영화의전당"
+   ],
+   "answer": "영화의전당",
+   "confidence": 0.95,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진의 거대한 유리 돔 지붕과 현대적인 건축 양식은 부산국제영화제 전용관인 영화의전당의 특징과 일치합니다.",
+   "vlm_s": 0.6
+  },
+  {
+   "file": "17_tour_900119.jpg",
+   "truth": "다대포해수욕장",
+   "truth_id": "tour:900119",
+   "offset_m": 61.2,
+   "radius_m": 300,
+   "candidates": [
+    "다대포해수욕장"
+   ],
+   "answer": "다대포해수욕장",
+   "confidence": 0.85,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진에는 낙동강 하구 지역의 특징적인 고층 아파트 단지들이 배경에 보이며, 해변과 바다가 이어진 풍경으로 다대포해수욕장과 유사한 지형적 특징을 보입니다.",
+   "vlm_s": 0.69
+  },
+  {
+   "file": "18_tour_900120.jpg",
+   "truth": "이기대공원",
+   "truth_id": "tour:900120",
+   "offset_m": 3.5,
+   "radius_m": 300,
+   "candidates": [
+    "이기대공원"
+   ],
+   "answer": "없음",
+   "confidence": 0.0,
+   "status": "선택필요",
+   "correct": false,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진에는 해안가의 석조 계단과 나무 울타리가 보이지만, 이기대공원의 광안대교나 해운대 바다가 보이지 않아 후보 목록의 장소와 일치하지 않습니다.",
+   "vlm_s": 0.66
+  },
+  {
+   "file": "19_tour_900121.jpg",
+   "truth": "범어사",
+   "truth_id": "tour:900121",
+   "offset_m": 24.9,
+   "radius_m": 300,
+   "candidates": [
+    "범어사"
+   ],
+   "answer": "범어사",
+   "confidence": 0.95,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진의 전통적인 한국 사찰 건물과 주변 풍경은 금정산 범어사의 특징과 일치합니다.",
+   "vlm_s": 0.58
+  },
+  {
+   "file": "20_tour_900122.jpg",
+   "truth": "금정산성",
+   "truth_id": "tour:900122",
+   "offset_m": 41.9,
+   "radius_m": 300,
+   "candidates": [
+    "금정산성"
+   ],
+   "answer": "금정산성",
+   "confidence": 0.85,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진의 전통적인 한국식 성문과 망루 구조는 금정산성의 특징과 일치하며, 주변 산지와 구름이 보이는 풍경도 해당 지역의 전형적인 경관입니다.",
+   "vlm_s": 0.73
+  },
+  {
+   "file": "21_tour_900123.jpg",
+   "truth": "아홉산숲",
+   "truth_id": "tour:900123",
+   "offset_m": 9.3,
+   "radius_m": 300,
+   "candidates": [
+    "아홉산숲"
+   ],
+   "answer": "아홉산숲",
+   "confidence": 0.85,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진에는 고밀도로 자란 대나무와 그늘진 산책로가 보이며, 이는 아홉산숲의 특징인 굵은 대나무 빽빽한 대숲과 산책로와 일치합니다.",
+   "vlm_s": 0.79
+  },
+  {
+   "file": "22_tour_900124.jpg",
+   "truth": "황령산 봉수대",
+   "truth_id": "tour:900124",
+   "offset_m": 50.9,
+   "radius_m": 300,
+   "candidates": [
+    "황령산 봉수대"
+   ],
+   "answer": "황령산 봉수대",
+   "confidence": 0.85,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진에는 황령산 정상에서 내려다본 부산 도시 풍경과 해안선이 잘 보이며, 주변 산지와 고층 건물이 특징적인 야경과 일치합니다.",
+   "vlm_s": 0.66
+  },
+  {
+   "file": "23_busan_B002.jpg",
+   "truth": "부산시민공원",
+   "truth_id": "busan:B002",
+   "offset_m": 85.8,
+   "radius_m": 300,
+   "candidates": [
+    "부산시민공원"
+   ],
+   "answer": "없음",
+   "confidence": 0.0,
+   "status": "선택필요",
+   "correct": false,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진에는 고층 아파트와 현대적인 도시 풍경을 배경으로 한 목조 다리가 보이며, 부산시민공원의 잔디밭이나 기억의 기둥 같은 특징은 보이지 않습니다.",
+   "vlm_s": 0.65
+  },
+  {
+   "file": "24_busan_B003.jpg",
+   "truth": "전포카페거리",
+   "truth_id": "busan:B003",
+   "offset_m": 3.3,
+   "radius_m": 300,
+   "candidates": [
+    "전포카페거리",
+    "전포 OO베이커리"
+   ],
+   "answer": "전포 OO베이커리",
+   "confidence": 0.8,
+   "status": "자동확정",
+   "correct": false,
+   "included": true,
+   "confident_wrong": true,
+   "reason": "사진에는 'Mr.Dog' 로 된 가게와 그 옆에 있는 카페가 보이며, 전포 베이커리 근처의 상가 골목 풍경과 일치합니다.",
+   "vlm_s": 0.68
+  },
+  {
+   "file": "25_busan_B005.jpg",
+   "truth": "밀락더마켓",
+   "truth_id": "busan:B005",
+   "offset_m": 41.1,
+   "radius_m": 300,
+   "candidates": [
+    "밀락더마켓",
+    "민락수변공원",
+    "민락 OO회센터"
+   ],
+   "answer": "밀락더마켓",
+   "confidence": 0.8,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진 속 넓은 유리창 너머로 광안대교와 바닷가 풍경이 보이며, 내부에는 식음료 매장과 휴식 공간이 있는 복합 상가의 특징을 가진 밀락더마켓과 일치합니다.",
+   "vlm_s": 0.72
+  },
+  {
+   "file": "26_busan_B006.jpg",
+   "truth": "서면 젊음의거리",
+   "truth_id": "busan:B006",
+   "offset_m": 67.5,
+   "radius_m": 300,
+   "candidates": [
+    "서면 젊음의거리",
+    "서면 OO돼지국밥",
+    "부전 OO국밥집"
+   ],
+   "answer": "서면 젊음의거리",
+   "confidence": 0.8,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진은 상가 건물과 차량이 있는 번화가 거리를 보여주고 있으며, 서면 젊음의거리와 일치하는 특징을 보입니다.",
+   "vlm_s": 0.64
+  },
+  {
+   "file": "27_busan_B007.jpg",
+   "truth": "온천천시민공원",
+   "truth_id": "busan:B007",
+   "offset_m": 57.9,
+   "radius_m": 300,
+   "candidates": [
+    "온천천시민공원"
+   ],
+   "answer": "온천천시민공원",
+   "confidence": 0.9,
+   "status": "자동확정",
+   "correct": true,
+   "included": true,
+   "confident_wrong": false,
+   "reason": "사진에는 도시를 배경으로 한 넓은 하천 양쪽에 조성된 산책로와 꽃밭이 보이며, 이는 온천천시민공원의 특징과 일치합니다.",
+   "vlm_s": 0.69
+  }
+ ]
+}

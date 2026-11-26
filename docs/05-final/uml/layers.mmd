@@ -1,0 +1,19 @@
+%% 2.3 전체 구조 (계층) — 최종 구현 기준
+flowchart TB
+  P["<b>Presentation</b> · React 모바일 웹<br/>Web Client 화면 15개 · 지도 OpenStreetMap (키가 있으면 카카오맵)"]
+  A["<b>Application</b> · FastAPI<br/>Trip · Visit · Story API 23개 · 공유 카드"]
+  Q[("<b>작업 큐</b><br/>Redis + RQ")]
+  W["<b>Analysis · Domain</b> · Python 워커<br/>분석: EXIF → 방문지 묶기 → 후보 조회 → VLM 판별<br/>여행기: 날짜별 LLM 작성 → 사실 대조 · 공용 모듈"]
+  D[("<b>Data</b><br/>PostgreSQL · 썸네일 · 임시 원본")]
+  X["<b>External Adapter</b><br/>장소 데이터 어댑터 · AI Gateway"]
+  V["<b>Ollama</b> (같은 서버 GPU)<br/>Qwen3.5 4B: VLM 장소 판별 · LLM 여행기"]
+  E["<b>장소 데이터</b><br/>TourAPI · 부산시 · 카카오 로컬<br/>(키 미발급 → 같은 형식 샘플 40곳)"]
+  P -->|"REST / JSON (Cloudflare 터널 → nginx)"| A
+  A -->|작업 등록| Q
+  Q -->|작업 전달| W
+  A -->|공용 모듈 호출| W
+  A --> D
+  W --> D
+  W --> X
+  X --> V
+  X --> E

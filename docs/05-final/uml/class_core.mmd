@@ -1,0 +1,88 @@
+%% 4.1 주요 클래스 다이어그램 (분석 파이프라인·여행기). 계층 구분은 그림 3-1과 같음. 비공개 메서드는 유니코드 '−'(U+2212)로 표시 (ASCII '-'는 Mermaid가 줄을 잘못 나눔). PlaceCache 관계는 '--o'로 적어야 선이 다른 상자 뒤로 지나가지 않음. 조립: backend/app/services.py (의존성 주입)
+classDiagram
+direction LR
+  class AnalysisOrchestrator {
+    <<control>>
+    +run(job_id)
+    −_match_visit(trip_id, visit_id)
+    −_purge_sensitive(trip_id)
+  }
+  class PlaceMatcher {
+    +ask(image, candidates) VlmAnswer
+    +apply(visit, answer, error) MatchLog[]
+  }
+  class UntaggedPhotoResolver {
+    +resolve(taken_at, spans, image) Suggestion
+  }
+  class StoryGenerator {
+    +generate(db, story) Story
+    +rewrite_paragraph(db, story, paragraph_id) Story
+    −_template_day(style, visits, first, day) dict
+    −_assemble(db, story, paragraphs, ctx)
+  }
+  class CandidateFinder {
+    +find(db, lat, lng) Candidate[]
+    +search(db, query) Candidate[]
+  }
+  class FactChecker {
+    <<utility>>
+    +check_generated_sentence(text, facts, trip, day) CheckResult
+    +check_edited_sentence(text, facts, trip) CheckResult
+    +foreign_script(text) str[]
+    +time_of_day_words(text) list
+  }
+  class VisitClusterer {
+    <<utility>>
+    +cluster_photos(photos) ClusterResult
+  }
+  class ExifExtractor {
+    <<utility>>
+    +extract_meta(data) PhotoMeta
+    +make_thumbnail(data) bytes
+  }
+  class TripRepository {
+    <<repository>>
+    +create_trip(db, owner) Trip
+    +get_trip(db, id, owner) Trip
+    +delete_trip(db, trip)
+  }
+  class PlaceCache {
+    +resolve(db, place_id) PlaceRecord
+    +upsert(db, record) Place
+  }
+  class MediaStore {
+    +save_original(trip_id, photo_id, data)
+    +delete_originals(trip_id) int
+    +cleanup_orphans(active_ids) int
+  }
+  class AIGateway {
+    <<adapter>>
+    +vlm_match(jpeg, candidates) str
+    +vlm_compare(jpeg, neighbors) str
+    +llm_story_part(payload) str
+    +llm_title(payload) str
+    +llm_rewrite_paragraph(payload, variant) str
+    +template_paragraph(payload, variant) str
+  }
+  class PlaceDataAdapter {
+    <<adapter>>
+    +tour_nearby(lat, lng, r) PlaceRecord[]
+    +busan_all() PlaceRecord[]
+    +kakao_nearby(lat, lng, r) PlaceRecord[]
+  }
+AnalysisOrchestrator o-- TripRepository
+AnalysisOrchestrator o-- MediaStore
+AnalysisOrchestrator o-- CandidateFinder
+AnalysisOrchestrator o-- PlaceMatcher
+AnalysisOrchestrator o-- UntaggedPhotoResolver
+AnalysisOrchestrator ..> ExifExtractor : 사용
+AnalysisOrchestrator ..> VisitClusterer : 사용
+CandidateFinder o-- PlaceDataAdapter
+CandidateFinder o-- PlaceCache
+PlaceCache o-- PlaceDataAdapter
+PlaceMatcher o-- AIGateway
+UntaggedPhotoResolver o-- AIGateway
+StoryGenerator o-- AIGateway
+PlaceCache --o StoryGenerator
+StoryGenerator ..> FactChecker : 문장 대조
+TripRepository o-- MediaStore
